@@ -1,14 +1,13 @@
 import { Gateway } from 'fabric-network';
 import * as _ from 'lodash';
 import * as Nano from 'nano';
-import { Metadata, Block, Transaction, DatabaseNames } from './types';
+import { Metadata, Block, Transaction, DatabaseNames, METADATA_DOC } from './types';
 
 export class SyncManager {
 	private writePending = false;
-	private metadata: Metadata = null;
+	private metadata: Metadata & Nano.MaybeDocument = null;
 	private timer: NodeJS.Timeout = null;
 	private INTERVAL = 5000;
-	private METADATA_DOC = 'status';
 	private listeners = [];
 	private logger = console;
 
@@ -23,6 +22,9 @@ export class SyncManager {
 	public async connect(config, options) {
 		this.gateway = this.gateway || new Gateway();
 		await this.gateway.connect(config, options);
+
+		const dbInfo = await this.nano.info();
+		console.log('DB Info', dbInfo);
 	}
 
 	public async start(channels: string[]) {
@@ -35,7 +37,7 @@ export class SyncManager {
 			const channel = await this.gateway.getNetwork(channelName);
 			const onEvent = async (error, event) => {
 				if (error) {
-					this.logger.error(`Block Event Error: ${error.message}`);
+					this.logger.error(`[${channelName}] Block Event Error: ${error.message}`);
 					return;
 				}
 
@@ -47,7 +49,7 @@ export class SyncManager {
 			};
 			const listener = await channel.addBlockListener('listener', onEvent, options);
 			this.listeners.push(listener);
-			this.logger.log(`Added Block Listener: channelName=${channelName},startBlock=${options.startBlock}`);
+			this.logger.log(`[${channelName}/${options.startBlock}] Added Block Listener`);
 		}
 	}
 
@@ -72,18 +74,20 @@ export class SyncManager {
 			await this.nano.db.create(dbName);
 
 			if (dbName === DatabaseNames.METADATA.toString()) {
-				await this.nano.db.use<Metadata>(dbName).insert({ channels: {} }, this.METADATA_DOC);
+				await this.nano.db.use<Metadata>(dbName).insert({ channels: {} }, METADATA_DOC);
 				this.logger.log('Created metadata status document');
 			}
 
 			if (dbName === DatabaseNames.BLOCKS.toString()) {
+				await this.nano.db.use(dbName).createIndex({ index: { fields: ['timestamp'] } });
 				await this.nano.db.use(dbName).createIndex({ index: { fields: ['height'] } });
 				await this.nano.db.use(dbName).createIndex({ index: { fields: ['channelName'] } });
 				this.logger.log('Created block indexes');
 			}
 
 			if (dbName === DatabaseNames.TRANSACTIONS.toString()) {
-				await this.nano.db.use(dbName).createIndex({ index: { fields: ['txTimestamp'] } });
+				await this.nano.db.use(dbName).createIndex({ index: { fields: ['timestamp'] } });
+				await this.nano.db.use(dbName).createIndex({ index: { fields: ['blockHeight'] } });
 				await this.nano.db.use(dbName).createIndex({ index: { fields: ['blockHash'] } });
 				await this.nano.db.use(dbName).createIndex({ index: { fields: ['channelName'] } });
 				await this.nano.db.use(dbName).createIndex({ index: { fields: ['channelName', 'chaincodeName'] } });
@@ -93,7 +97,7 @@ export class SyncManager {
 	}
 
 	private async loadMetadata() {
-		this.metadata = await this.nano.db.use<Metadata>(DatabaseNames.METADATA).get(this.METADATA_DOC);
+		this.metadata = await this.nano.db.use<Metadata>(DatabaseNames.METADATA).get(METADATA_DOC);
 	}
 
 	private async syncMetadata() {
@@ -121,8 +125,9 @@ export class SyncManager {
 	private async onBlock(event: any, channelName: string) {
 		const hash = event.header.data_hash;
 		const height = parseInt(event.header.number, 10);
-		const previousHash = event.header.previous_hash;
 		const transactions = _.get(event, 'data.data', []);
+		const timestamp = transactions[0].payload.header.channel_header.timestamp;
+		const previousHash = event.header.previous_hash;
 
 		if (height < this.getLastBlock(channelName)) {
 			this.logger.log(`[${channelName}] Skipped Block (${height})`);
@@ -132,8 +137,9 @@ export class SyncManager {
 		await this.addBlock({
 			id: hash,
 			height,
+			timestamp: new Date(timestamp),
 			previousHash,
-			txCount: transactions.length,
+			transactions: transactions.length,
 			channelName,
 		});
 
@@ -142,21 +148,30 @@ export class SyncManager {
 			const chaincodeResponse = _.get(transactionData, 'payload.data.actions[0].payload.action.proposal_response_payload.extension');
 
 			const chaincodeWrites = {};
+			const chaincodeReads = {};
 			if (chaincodeResponse) {
 				for (const item of chaincodeResponse.results.ns_rwset) {
+					for (const read of item.rwset.reads) {
+						chaincodeReads[read.key] = read.version
+							? {
+								block: parseInt(read.version.block_num, 10),
+								transaction: parseInt(read.version.tx_num, 10),
+							}
+							: null;
+					}
 					for (const write of item.rwset.writes) {
 						chaincodeWrites[write.key] = write.isDelete ? null : this.tryJsonParse(write.value);
 					}
 				}
 			}
 
-			await this.onTransaction({
+			await this.addTransaction({
 				blockHash: hash,
 				blockHeight: height,
-				txId: channelHeader.tx_id,
-				txType: channelHeader.type,
-				txTypeString: channelHeader.typeString,
-				txTimestamp: new Date(channelHeader.timestamp),
+				id: channelHeader.tx_id,
+				type: channelHeader.type,
+				typeString: channelHeader.typeString,
+				timestamp: new Date(channelHeader.timestamp),
 				channelName: channelHeader.channel_id,
 				channelVersion: channelHeader.version,
 				chaincodeName: chaincodeResponse ? chaincodeResponse.chaincode_id.name : null,
@@ -164,30 +179,30 @@ export class SyncManager {
 				chaincodeResponseStatus: chaincodeResponse ? chaincodeResponse.response.status : null,
 				chaincodeResponse: chaincodeResponse ? this.tryJsonParse(chaincodeResponse.response.payload) : null,
 				chaincodeWrites: chaincodeResponse ? chaincodeWrites : null,
+				chaincodeReads: chaincodeResponse ? chaincodeReads : null,
 			});
 		}
 
 		this.setLastBlock(channelName, height);
 	}
 
-	private async addBlock(block: Block) {
+	private async addBlock(block: Block & Nano.MaybeDocument) {
 		const success = await this.nano.db.use(DatabaseNames.BLOCKS).insert(block, block.id).catch(() => null);
+		const shortId = block.id.substr(0, 16) + '...';
 		if (success) {
-			this.logger.log(`[${block.channelName}] New Block (${block.height})`);
-			// this.logger.log(util.inspect(block, false, null, true));
+			this.logger.log(`[${block.channelName}/${block.height}] New Block: ${shortId}`);
 		} else {
-			this.logger.log(`[${block.channelName}] Skipped Block ${block.height}`);
+			this.logger.log(`[${block.channelName}/${block.height}] Skipped Block: ${shortId}`);
 		}
 	}
 
-	private async onTransaction(transaction: Transaction) {
-		const success = await this.nano.db.use(DatabaseNames.TRANSACTIONS).insert(transaction, transaction.txId).catch(() => null);
-		const shortId = transaction.txId.substr(0, 16);
+	private async addTransaction(transaction: Transaction & Nano.MaybeDocument) {
+		const success = await this.nano.db.use(DatabaseNames.TRANSACTIONS).insert(transaction, transaction.id).catch(() => null);
+		const shortId = transaction.id.substr(0, 16) + '...';
 		if (success) {
-			this.logger.log(`[${transaction.channelName}] New Transaction (${shortId}...)`);
-			// this.logger.log(util.inspect(transaction, false, null, true));
+			this.logger.log(`[${transaction.channelName}/${transaction.blockHeight}] New Transaction: ${shortId}`);
 		} else {
-			this.logger.log(`[${transaction.channelName}] Skipped Transaction ${shortId}... (Block ${transaction.blockHeight})`);
+			this.logger.log(`[${transaction.channelName}/${transaction.blockHeight}] Skipped Transaction: ${shortId}`);
 		}
 	}
 

@@ -1,0 +1,16 @@
+<h2>{{ 'TRANSACTIONS' | translate }}</h2>
+<hr>
+<div class="row">
+	<div class="col-12 col-lg-6">
+		<fabric-explorer-search-bar [options]="searchOptions" (search)="search($event)"></fabric-explorer-search-bar>
+	</div>
+</div>
+<div class="row">
+	<div class="col-12">
+		<fabric-explorer-transaction-list [transactions]="transactions">
+			<button nbButton (click)="loadTransactions()" [nbSpinner]="loading" [disabled]="loading">
+				<span>{{ 'LOAD' | translate }}</span>
+			</button>
+		</fabric-explorer-transaction-list>
+	</div>
+</div>

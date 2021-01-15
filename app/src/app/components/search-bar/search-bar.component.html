@@ -1,0 +1,32 @@
+<form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="options && options.length > 0">
+	<div class="form-group">
+		<div class="d-flex">
+			<div class="">
+				<nb-select fullWidth formControlName="key" id="inputKey">
+					<nb-option [value]="item.type" *ngFor="let item of options">
+						<span>{{ item.translateKey | translate }}</span>
+					</nb-option>
+				</nb-select>
+			</div>
+			<div class="flex-grow mr-2 ml-2 search-input">
+				<input nbInput fullWidth
+					type="text"
+					class="form-control form-control-lg"
+					formControlName="value"
+					id="inputValue"
+					[status]="formGroup.controls.value.touched && !formGroup.controls.value.valid? 'danger' : ''">
+			</div>
+			<div class="">
+				<button nbButton type="submit" status="primary" [disabled]="!formGroup.valid" [nbSpinner]="loading"
+					nbSpinnerStatus="primary" data-cy="show-all">
+					<span class="fa fa-search mr-2"></span>
+					<span>{{ 'SEARCH' | translate }}</span>
+				</button>
+				<button nbButton type="button" status="info" class="ml-2" [hidden]="hideShowAll || loading || !filtered"
+					(click)="reset()" data-cy="reset">
+					<span>{{ 'RESET' | translate }}</span>
+				</button>
+			</div>
+		</div>
+	</div>
+</form>

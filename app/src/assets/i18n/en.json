@@ -1,0 +1,15 @@
+{
+	"BLOCKS": "Blocks",
+	"CHAINCODE": "Chaincode",
+	"CHANNEL": "Channel",
+	"CHANNEL_NAME": "Channel Name",
+	"DASHBOARD": "Dashboard",
+	"FABRIC_EXPLORER": "Fabric Explorer",
+	"HASH": "Hash",
+	"HEIGHT": "Height",
+	"NAME": "Name",
+	"RESET": "Reset",
+	"TIMESTAMP": "Timestamp",
+	"TRANSACTIONS": "Transactions",
+	"_": "_"
+}

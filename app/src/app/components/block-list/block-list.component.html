@@ -1,0 +1,30 @@
+<nb-card>
+	<nb-card-body>
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">{{ 'HEIGHT' | translate }}</th>
+					<th scope="col">{{ 'HASH' | translate }}</th>
+					<th scope="col" *ngIf="!simple">{{ 'TIMESTAMP' | translate }}</th>
+					<th scope="col" *ngIf="!simple">{{ 'TRANSACTIONS' | translate }}</th>
+					<th scope="col">{{ 'CHANNEL' | translate }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let block of blocks">
+					<td>{{ block.height }}</td>
+					<td>
+						<a routerLink="/blocks/{{ block.id }}/details" class="text-monospace">
+							<span *ngIf="simple">{{ block.id.substr(0, 8) }}...</span>
+							<span *ngIf="!simple">{{ block.id }}</span>
+						</a>
+					</td>
+					<td *ngIf="!simple">{{ block.timestamp | date:'short' }}</td>
+					<td *ngIf="!simple">{{ block.transactions }}</td>
+					<td>{{ block.channelName }}</td>
+				</tr>
+			</tbody>
+		</table>
+		<ng-content></ng-content>
+	</nb-card-body>
+</nb-card>

@@ -1,0 +1,65 @@
+<div *ngIf="block">
+	<div>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a routerLink="/blocks">{{ 'BLOCKS' | translate }}</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<span>{{ block.id }}</span>
+				</li>
+			</ol>
+		</nav>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-12 col-lg-6">
+			<nb-card>
+				<nb-card-body>
+					<h6 class="mb-0">Details</h6>
+					<hr>
+					<div class="d-flex justify-content-between">
+						<span class="font-weight-bold pb-1">Hash</span>
+						<span>{{ block.id }}</span>
+					</div>
+					<div class="d-flex justify-content-between">
+						<span class="font-weight-bold pb-1">Height</span>
+						<span>{{ block.height }}</span>
+					</div>
+					<div class="d-flex justify-content-between">
+						<span class="font-weight-bold pb-1">Timestamp</span>
+						<span>{{ block.timestamp }}</span>
+					</div>
+					<div class="d-flex justify-content-between">
+						<span class="font-weight-bold pb-1">Channel Name</span>
+						<a routerLink="/blocks" [queryParams]="{ channelName: block.channelName }">
+							<span>{{ block.channelName }}</span>
+						</a>
+					</div>
+				</nb-card-body>
+			</nb-card>
+		</div>
+		<div class="col-12 col-lg-6">
+			<nb-card>
+				<nb-card-body>
+					<div>
+						<h6>Transactions ({{ block.transactions }})</h6>
+						<hr class="mb-0">
+						<table class="table">
+							<tbody>
+								<tr *ngFor="let transaction of transactions; let i = index">
+									<td [class.border-top-0]="i === 0">{{ i + 1}}</td>
+									<td [class.border-top-0]="i === 0">
+										<a routerLink='/transactions/{{ transaction.id }}/details' class="text-monospace">
+											<span>{{ transaction.id }}</span>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</nb-card-body>
+			</nb-card>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,26 @@
+.dialog-card,
+.dialog-card-sm,
+.dialog-card-md,
+.dialog-card-lg {
+	margin-left: auto;
+	margin-right: auto;
+	width: 90vw;
+}
+
+@media (min-width: 60rem) {
+	.dialog-card-lg {
+		width: 56rem;
+	}
+}
+
+@media (min-width: 40rem) {
+	.dialog-card-md {
+		width: 37rem;
+	}
+}
+
+@media (min-width: 20rem) {
+	.dialog-card-sm {
+		width: 24rem;
+	}
+}

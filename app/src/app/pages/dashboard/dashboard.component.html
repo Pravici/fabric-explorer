@@ -1,0 +1,37 @@
+<h2>{{ 'DASHBOARD' | translate }}</h2>
+<hr>
+<div class="row">
+	<div class="col-12 col-lg-12">
+		<h6>Channels</h6>
+		<nb-card>
+			<nb-card-body>
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">{{ 'NAME' | translate }}</th>
+							<th scope="col">{{ 'BLOCKS' | translate }}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let item of channels$ | async | keyvalue">
+							<td>{{ item.key }}</td>
+							<td>{{ item.value.lastBlock }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</nb-card-body>
+		</nb-card>
+	</div>
+</div>
+<div class="row">
+	<div class="col-12 col-lg-6">
+		<h6>Blocks</h6>
+		<fabric-explorer-block-list [blocks]="blocks$ | async" [simple]="true">
+		</fabric-explorer-block-list>
+	</div>
+	<div class="col-12 col-lg-6">
+		<h6>Transactions</h6>
+		<fabric-explorer-transaction-list [transactions]="transactions$ | async" [simple]="true">
+		</fabric-explorer-transaction-list>
+	</div>
+</div>

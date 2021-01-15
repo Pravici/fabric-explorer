@@ -1,12 +1,3 @@
-import * as Nano from 'nano';
-import { Request } from 'express';
-
-export interface NanoRequest extends Request {
-	nano: Nano.ServerScope,
-	transactions: Nano.DocumentScope<Transaction>,
-	blocks: Nano.DocumentScope<Block>,
-}
-
 export enum DatabaseNames {
 	METADATA = 'metadata',
 	BLOCKS = 'blocks',
@@ -14,7 +5,7 @@ export enum DatabaseNames {
 	STATE = 'state',
 }
 
-export interface Metadata extends Nano.MaybeDocument {
+export interface Metadata {
 	channels: {
 		[channelName: string]: {
 			lastBlock: number;
@@ -22,21 +13,29 @@ export interface Metadata extends Nano.MaybeDocument {
 	};
 }
 
-export interface Block extends Nano.MaybeDocument {
+export const METADATA_DOC = 'status';
+
+export interface State {
+	key: string;
+	value: any;
+}
+
+export interface Block {
 	id: string;
+	timestamp: Date;
 	height: number;
 	previousHash: string;
-	txCount: number;
+	transactions: number;
 	channelName: string;
 }
 
-export interface Transaction extends Nano.MaybeDocument {
+export interface Transaction {
 	blockHash: string;
 	blockHeight: number;
-	txId: string;
-	txType: string;
-	txTypeString: string;
-	txTimestamp: Date;
+	id: string;
+	type: string;
+	typeString: string;
+	timestamp: Date;
 	channelName: string;
 	channelVersion: string;
 	chaincodeName: string;
@@ -45,5 +44,11 @@ export interface Transaction extends Nano.MaybeDocument {
 	chaincodeResponse: string;
 	chaincodeWrites: {
 		[key: string]: string | object;
+	};
+	chaincodeReads: {
+		[key: string]: {
+			block: number;
+			transaction: number;
+		};
 	};
 }

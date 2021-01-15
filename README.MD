@@ -2,10 +2,16 @@
 ```bash
 docker stop query 
 docker rm query
-docker run -d -p 5984:5984 -e COUCHDB_USER=<user> -e COUCHDB_PASSWORD=<password> --name query couchdb
+docker run -d -p 5984:5984 -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=Password123 --name query couchdb
 ```
 
-# Start fabric-explorer
+# Run fabric-explorer
 ```bash
-npm run start:dev
+docker run \
+  --env EXPLORER_WALLET_URL="<url>" \
+  --env EXPLORER_WALLET_IDENTITY=issuer \
+  --env EXPLORER_DB_URL="http://admin:Password123@query:5984" \
+  -v "network-config.json":/config/network-config.json \
+  --name etl \
+   pravici/fabric-explorer
 ```

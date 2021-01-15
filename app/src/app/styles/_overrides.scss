@@ -1,0 +1,92 @@
+@import './themes';
+
+@mixin nb-overrides() {
+	nb-select.size-medium button {
+		padding: 0.4375rem 2.2rem 0.4375rem 1.125rem !important;
+
+		nb-icon {
+			right: 0.41rem !important;
+		}
+	}
+
+	nb-context-menu {
+		nb-menu {
+			text-align: left;
+		}
+	}
+
+	nb-sidebar {
+		nb-menu {
+			nb-icon {
+				margin-right: 0.5rem !important;
+			}
+
+			.menu-title {
+				margin-left: 0.5rem;
+			}
+		}
+	}
+
+	@each $status in nb-get-statuses() {
+		.text-#{$status} {
+			color: nb-theme(color-#{$status}-default) !important;
+		}
+
+		.badge-#{$status},
+		nb-list-item.status-#{$status} {
+			background-color: nb-theme(color-#{$status}-default);
+			color: nb-theme(color-#{$status}-100);
+		}
+
+		.border-left-#{$status} {
+			border-left: 0.35rem solid nb-theme(color-#{$status}-default);
+		}
+	}
+
+	nb-route-tabset .route-tabset {
+		padding-left: 0;
+		padding-bottom: 1rem;
+
+		nb-icon {
+			margin-right: 0.5rem;
+		}
+	}
+
+	nb-toggle {
+		border-radius: 1rem;
+
+		&.no-label > label > span.text {
+			display: none;
+		}
+
+		> label {
+			margin-bottom: 0;
+		}
+	}
+}
+
+@mixin bootstrap-overrides() {
+	.breadcrumb {
+		background-color: nb-theme(background-basic-color-1);
+	}
+
+	pre,
+	.breadcrumb-item.active {
+		color: nb-theme(text-basic-color);
+	}
+
+	.breadcrumb-item + .breadcrumb-item::before {
+		content: '\f054';
+		font-weight: 900;
+		font-family: 'Font Awesome 5 Free';
+	}
+
+	.table {
+		color: nb-theme(text-basic-color);
+		background-color: nb-theme(background-basic-color-1);
+	}
+}
+
+.table thead th {
+	border-top: none;
+}

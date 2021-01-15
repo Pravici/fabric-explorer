@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap');
+
+// themes - our custom or/and out of the box themes
+@import 'themes';
+
+// framework component themes (styles tied to theme variables)
+@import '~@nebular/theme/styles/globals';
+@import '~@nebular/auth/styles/all';
+
+@import '~bootstrap/scss/bootstrap.scss';
+
+@import './layout';
+@import './modal';
+@import './overrides';
+@import './animations';
+@import './utilities';
+
+// install the framework and custom global styles
+@include nb-install() {
+	// framework global styles
+	@include nb-theme-global();
+	@include nb-auth-global();
+
+	@include ngx-layout();
+
+	@include nb-overrides();
+	@include bootstrap-overrides();
+}
+
+.fabric-explorer-select {
+	width: 150px;
+}
+
+nb-badge.fabric-explorer-badge {
+	position: unset;
+	display: inline-block;
+}
+
+nb-list-item:focus {
+	outline: none;
+}
+
+.fabric-explorer-offer-image {
+	width: 7rem;
+	height: 7rem;
+	object-fit: cover;
+	border-radius: 1rem;
+}
+
+.fabric-explorer-overscroll {
+	margin-bottom: 10rem;
+}
+
+fabric-explorer-toggle-readonly nb-toggle .toggle {
+	cursor: default !important;
+}
+
+.line-height-reset {
+	line-height: 1rem;
+}
+
+.search-input {
+	max-width: 300px;
+}

@@ -1,0 +1,16 @@
+<h2>{{ 'BLOCKS' | translate }}</h2>
+<hr>
+<div class="row">
+	<div class="col-12">
+		<fabric-explorer-search-bar [options]="searchOptions" (search)="search($event)"></fabric-explorer-search-bar>
+	</div>
+</div>
+<div class="row">
+	<div class="col-12">
+		<fabric-explorer-block-list [blocks]="blocks">
+			<button nbButton (click)="loadBlocks()" [nbSpinner]="loading" [disabled]="loading">
+				<span>{{ 'LOAD' | translate }}</span>
+			</button>
+		</fabric-explorer-block-list>
+	</div>
+</div>

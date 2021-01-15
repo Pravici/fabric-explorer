@@ -1,0 +1,33 @@
+.text-size-smaller {
+	font-size: 0.75rem;
+}
+
+.text-size-bigger {
+	font-size: 1.25rem;
+}
+
+.text-size-normal {
+	font-size: 1rem !important;
+}
+
+.text-size-double {
+	font-size: 2rem;
+}
+
+.text-ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.flex-grow {
+	flex-grow: 1;
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+.mw-2 {
+	min-width: 2rem;
+}

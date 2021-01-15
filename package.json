@@ -2,10 +2,12 @@
 	"name": "fabric-explorer",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"scripts": {
-		"start:dev": "ts-node-dev --watch=.env index.ts",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "forever ./dist/index.js",
+		"start:dev": "ts-node-dev --watch=.env src/index.ts",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc"
 	},
 	"repository": {
 		"type": "git",
@@ -21,10 +23,10 @@
 		"body-parser": "^1.19.0",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
-		"fabric-network": "^1.4.8",
+		"fabric-network": "^1.4.16",
+		"forever": "^3.0.4",
 		"lodash": "^4.17.20",
-		"nano": "^9.0.1",
-		"uninstall": "0.0.0"
+		"nano": "^9.0.1"
 	},
 	"devDependencies": {
 		"@types/body-parser": "^1.19.0",
