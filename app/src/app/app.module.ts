@@ -14,9 +14,9 @@ import { CoreModule } from './core/core.module';
 import { BlockDetailComponent } from './pages/block-detail/block-detail.component';
 import { BlocksComponent } from './pages/blocks/blocks.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ExplorerComponent } from './pages/explorer/explorer.component';
 import { TransactionDetailComponent } from './pages/transaction-detail/transaction-detail.component';
 import { TransactionsComponent } from './pages/transactions/transactions.component';
-import { TruncatePipe } from './pipes/truncate.pipe';
 import { BlockResolve } from './resolvers/block.resolve';
 import { TransactionResolve } from './resolvers/transaction.resolve';
 import { ThemeModule } from './theme/theme.module';
@@ -25,6 +25,10 @@ export const routes: Routes = [
 	{
 		path: 'dashboard',
 		component: DashboardComponent,
+	},
+	{
+		path: 'explorer',
+		component: ExplorerComponent,
 	},
 	{
 		path: 'blocks',
@@ -71,7 +75,7 @@ export function createTranslateLoader(http: HttpClient) {
 		BlockDetailComponent,
 		TransactionsComponent,
 		TransactionDetailComponent,
-		TruncatePipe,
+		ExplorerComponent,
 	],
 	imports: [
 		BrowserModule,

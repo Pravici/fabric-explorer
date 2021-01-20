@@ -1,6 +1,6 @@
 <nb-card>
 	<nb-card-body>
-		<table class="table">
+		<table class="table m-0">
 			<thead>
 				<tr>
 					<th scope="col">{{ 'HEIGHT' | translate }}</th>
@@ -13,9 +13,9 @@
 			<tbody>
 				<tr *ngFor="let block of blocks">
 					<td>{{ block.height }}</td>
-					<td>
-						<a routerLink="/blocks/{{ block.id }}/details" class="text-monospace">
-							<span *ngIf="simple">{{ block.id.substr(0, 8) }}...</span>
+					<td class="text-monospace">
+						<a routerLink="/blocks/{{ block.id }}/details">
+							<span *ngIf="simple">{{ block.id | truncatePipe:8:8 }}</span>
 							<span *ngIf="!simple">{{ block.id }}</span>
 						</a>
 					</td>

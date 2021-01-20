@@ -1,6 +1,6 @@
 <nb-card>
 	<nb-card-body>
-		<table class="table">
+		<table class="table m-0">
 			<thead>
 				<tr>
 					<th scope="col">{{ 'HASH' | translate }}</th>
@@ -11,8 +11,8 @@
 			</thead>
 			<tbody>
 				<tr *ngFor="let tx of transactions">
-					<td>
-						<a routerLink='/transactions/{{ tx.id }}/details' class="text-monospace">
+					<td class="text-monospace">
+						<a routerLink='/transactions/{{ tx.id }}/details'>
 							<span *ngIf="simple">{{ tx.id.substr(0, 8) }}...</span>
 							<span *ngIf="!simple">{{ tx.id }}</span>
 						</a>

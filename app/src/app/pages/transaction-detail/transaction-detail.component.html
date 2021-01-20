@@ -6,7 +6,7 @@
 					<a routerLink="/transactions">{{ 'TRANSACTIONS' | translate }}</a>
 				</li>
 				<li class="breadcrumb-item active">
-					<span>{{ transaction.id }}</span>
+					<span>{{ transaction.id | truncatePipe:8:8 }}</span>
 				</li>
 			</ol>
 		</nav>
@@ -20,7 +20,7 @@
 					<hr>
 					<div class="d-flex justify-content-between">
 						<span class="font-weight-bold pb-1">Hash</span>
-						<span>{{ transaction.id }}</span>
+						<span class="text-monospace">{{ transaction.id }}</span>
 					</div>
 					<div class="d-flex justify-content-between">
 						<span class="font-weight-bold pb-1">Timestamp</span>
@@ -34,12 +34,12 @@
 					</div>
 					<div class="d-flex justify-content-between">
 						<span class="font-weight-bold pb-1">Block Height</span>
-						<span>{{ transaction.blockHeight }}</span>
+						<span class="text-monospace">{{ transaction.blockHeight }}</span>
 					</div>
 					<div class="d-flex justify-content-between">
 						<span class="font-weight-bold pb-1">Block Hash</span>
 						<a routerLink="/blocks/{{ transaction.blockHash }}/details">
-							<span>{{ transaction.blockHash }}</span>
+							<span class="text-monospace">{{ transaction.blockHash }}</span>
 						</a>
 					</div>
 				</nb-card-body>
@@ -49,14 +49,17 @@
 			<nb-card>
 				<nb-card-body>
 					<div>
-						<h6>Chaincode</h6>
+						<h6 class="d-flex justify-content-between">
+							<span>Chaincode</span>
+							<span>{{ transaction.chaincodeName }}:{{ transaction.chaincodeVersion }}</span>
+						</h6>
 						<hr>
-						<!-- <div class="d-flex justify-content-between">
-							<span class="font-weight-bold pb-1">Name</span>
-							<span>{{ transaction.chaincodeName }}</span>
-						</div> -->
-						<div class="font-weight-bold pb-1 pt-1">Reads</div>
-						<table class="table">
+						<div class="font-weight-bold pb-1 pt-1">{{ 'READS' | translate }}
+						</div>
+						<div class="text-muted pt-2" [hidden]="keys(transaction.chaincodeReads).length !== 0">
+							<span>{{ 'NO_READS' | translate }}</span>
+						</div>
+						<table class="table container mb-0" [hidden]="keys(transaction.chaincodeReads).length === 0">
 							<thead>
 								<tr>
 									<th scope="col">#</th>
@@ -79,8 +82,11 @@
 							</tbody>
 						</table>
 						<hr>
-						<div class="font-weight-bold pb-1 pt-1">Writes</div>
-						<table class="table container mb-0">
+						<div class="font-weight-bold pb-1 pt-1">{{ 'WRITES' | translate }}</div>
+						<div class="text-muted pt-2" [hidden]="keys(transaction.chaincodeWrites).length !== 0">
+							<span>{{ 'NO_WRITES' | translate }}</span>
+						</div>
+						<table class="table container mb-0" [hidden]="keys(transaction.chaincodeWrites).length === 0">
 							<thead>
 								<tr class="row m-0">
 									<th scope="col" class="col-1">#</th>

@@ -6,7 +6,7 @@
 					<a routerLink="/blocks">{{ 'BLOCKS' | translate }}</a>
 				</li>
 				<li class="breadcrumb-item active">
-					<span>{{ block.id }}</span>
+					<span>{{ block.id | truncatePipe:8:8 }}</span>
 				</li>
 			</ol>
 		</nav>

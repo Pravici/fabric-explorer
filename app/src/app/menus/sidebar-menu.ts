@@ -16,6 +16,13 @@ export const sidebarMenu: MenuItem[] = [
 	},
 	{
 		title: '',
+		translationKey: 'EXPLORER',
+		icon: 'folder-open',
+		link: '/explorer',
+		isGranted: ['menu', 'explorer'],
+	},
+	{
+		title: '',
 		translationKey: 'BLOCKS',
 		icon: 'cubes',
 		link: '/blocks',
@@ -27,5 +34,12 @@ export const sidebarMenu: MenuItem[] = [
 		icon: 'receipt',
 		link: '/transactions',
 		isGranted: ['menu', 'transactions'],
+	},
+	{
+		title: '',
+		translationKey: 'STATE',
+		icon: 'database',
+		link: '/state',
+		isGranted: ['menu', 'state'],
 	},
 ];

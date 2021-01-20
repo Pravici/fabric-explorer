@@ -41,7 +41,7 @@ export function create(nano: Nano.ServerScope) {
 	app.use(express.static('static'));
 	app.use(bodyParser.json());
 
-	app.use(['/api', '/'], api);
+	app.use('/api', api);
 	app.use(middleware.errorHandler());
 
 	return app;

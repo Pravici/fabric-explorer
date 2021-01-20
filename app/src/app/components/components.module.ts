@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { NgxQRCodeModule } from 'ngx-qrcode2';
+import { TruncatePipe } from '../pipes/truncate.pipe';
 import { ThemeModule } from '../theme/theme.module';
 import { BlockListComponent } from './block-list/block-list.component';
 import { FooterComponent } from './footer/footer.component';
@@ -22,9 +22,12 @@ const components = [
 	TransactionListComponent,
 ];
 
+const pipes = [
+	TruncatePipe,
+];
+
 @NgModule({
 	imports: [
-		NgxQRCodeModule,
 		RouterModule,
 		FormsModule,
 		ReactiveFormsModule,
@@ -32,7 +35,7 @@ const components = [
 		TranslateModule,
 	],
 	entryComponents: [],
-	declarations: [...components],
-	exports: [...components, TranslateModule],
+	declarations: [...components, ...pipes],
+	exports: [...components, ...pipes, TranslateModule],
 })
 export class ComponentsModule { }

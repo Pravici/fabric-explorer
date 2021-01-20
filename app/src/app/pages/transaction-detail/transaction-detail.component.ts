@@ -9,6 +9,7 @@ import { Transaction } from '../../common';
 })
 export class TransactionDetailComponent implements OnInit {
 	transaction: Transaction;
+	keys = Object.keys;
 
 	constructor(
 		private router: Router,

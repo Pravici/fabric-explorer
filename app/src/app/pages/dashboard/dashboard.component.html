@@ -1,37 +1,54 @@
 <h2>{{ 'DASHBOARD' | translate }}</h2>
 <hr>
-<div class="row">
-	<div class="col-12 col-lg-12">
-		<h6>Channels</h6>
-		<nb-card>
-			<nb-card-body>
-				<table class="table">
-					<thead>
-						<tr>
-							<th scope="col">{{ 'NAME' | translate }}</th>
-							<th scope="col">{{ 'BLOCKS' | translate }}</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr *ngFor="let item of channels$ | async | keyvalue">
-							<td>{{ item.key }}</td>
-							<td>{{ item.value.lastBlock }}</td>
-						</tr>
-					</tbody>
-				</table>
-			</nb-card-body>
-		</nb-card>
+<div>
+	<h6>Channels</h6>
+	<div class="row">
+		<div class="col overflow-auto">
+			<div class="d-flex flex-row">
+				<div *ngFor="let item of channels | keyvalue">
+					<nb-card class="mr-2 rounded">
+						<nb-card-body>
+							<h6>{{ item.key }}</h6>
+							<div class="d-flex align-items-end">
+								<h1 class="m-0">{{ item.value.lastBlock }}</h1>
+								<div class="text-muted mb-2 ml-1">blocks</div>
+							</div>
+						</nb-card-body>
+					</nb-card>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
+<hr>
+<!-- <div>
+	<h6>Blocks</h6>
+	<div class="row">
+		<div class="col overflow-auto">
+			<div class="d-flex flex-row">
+				<div *ngFor="let block of blocks">
+					<nb-card class="mr-2 rounded">
+						<nb-card-body>
+							<h6 class="text-muted m-0">{{ block.channelName }}</h6>
+							<h1 class="text-center mt-2 mb-2">{{ block.height }}</h1>
+							<h6 class="text-muted m-0">{{ block.id | truncatePipe:12 }}</h6>
+						</nb-card-body>
+					</nb-card>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<hr> -->
 <div class="row">
 	<div class="col-12 col-lg-6">
 		<h6>Blocks</h6>
-		<fabric-explorer-block-list [blocks]="blocks$ | async" [simple]="true">
+		<fabric-explorer-block-list [blocks]="blocks" [simple]="true">
 		</fabric-explorer-block-list>
 	</div>
 	<div class="col-12 col-lg-6">
 		<h6>Transactions</h6>
-		<fabric-explorer-transaction-list [transactions]="transactions$ | async" [simple]="true">
+		<fabric-explorer-transaction-list [transactions]="transactions" [simple]="true">
 		</fabric-explorer-transaction-list>
 	</div>
 </div>
