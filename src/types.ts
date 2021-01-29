@@ -24,7 +24,7 @@ export interface Block {
 
 export interface Transaction {
 	id: string;
-	type: string;
+	type: number;
 	typeString: string;
 	timestamp: Date;
 	blockHash: string;
@@ -33,7 +33,7 @@ export interface Transaction {
 	channelVersion: string;
 	chaincodeName: string;
 	chaincodeVersion: string;
-	chaincodeResponseStatus: string;
+	chaincodeResponseStatus: number;
 	chaincodeResponse: string;
 	chaincodeWrites: {
 		[key: string]: string | object;

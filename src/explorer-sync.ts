@@ -5,8 +5,6 @@ import { SCHEMA } from './constants';
 import { Channel, ChannelOption } from './types';
 import { abort, getLogger } from './utilities';
 
-const logger = getLogger('Sync');
-
 type ChannelCache = {
 	[name: string]: {
 		channel: Channel;
@@ -25,6 +23,8 @@ type SyncOptions = {
 };
 
 export class ExplorerSync {
+	private logger = getLogger('Sync');
+
 	private networkConfig: string | object;
 	private gatewayOptions: GatewayOptions;
 	private gateway = new Gateway();
@@ -52,15 +52,26 @@ export class ExplorerSync {
 	}
 
 	public async start() {
+
 		await this.gateway
 			.connect(this.networkConfig, this.gatewayOptions)
 			.catch(error => abort(`[Explorer.Sync] Unable to connect to gateway`, error));
 
 		await this.database
+			.connect()
+			.catch(error => abort(`[Explorer.Sync] Database connection problem`, error));
+
+		await this.database
 			.setup(SCHEMA, this.channels.map(c => c.name))
 			.catch(error => abort(`[Explorer.Sync] Unable to run setup on database`, error));
 
+		this.logger.debug(`Write interval set to ${this.writeInterval}`);
 		this.timer = setInterval(() => this.flushPendingWrites(), this.writeInterval);
+
+		// popular channel cache
+		for (const { name } of this.channels) {
+			await this.getChannelHeight(name);
+		}
 
 		this.listeners = [];
 		for (let { name, options: { startBlock = 'auto' } } of this.channels) {
@@ -68,6 +79,7 @@ export class ExplorerSync {
 				const channelHeight = await this.getChannelHeight(name);
 				startBlock = channelHeight || 0;
 			}
+
 			await this.addBlockListener(name, startBlock).catch(error =>
 				abort(`[Explorer.Sync] Unable to add block listener: name=${name}, startBlock=${startBlock}`, error),
 			);
@@ -78,7 +90,10 @@ export class ExplorerSync {
 		if (this.timer) {
 			clearTimeout(this.timer);
 		}
-		logger.info(`Cleaning up listeners`);
+		if (this.database) {
+			this.database.disconnect();
+		}
+		this.logger.info(`Cleaning up listeners`);
 		for (const listener of this.listeners) {
 			listener.unregister();
 		}
@@ -94,44 +109,51 @@ export class ExplorerSync {
 				'listener',
 				(error, event) => this.onEvent(error, event, channelName),
 				{ startBlock }));
-		logger.debug(`[${channelName}/${startBlock}] Added Block Listener`);
+		this.logger.debug(`[${channelName}/${startBlock}] Added Block Listener`);
 	}
 
 	private async onEvent(error, event, channelName) {
 		if (error) {
-			logger.error(`annelName}] Block Event Error: ${error.message}`);
+			this.logger.error(`annelName}] Block Event Error: ${error.message}`);
 			return;
 		}
 
 		try {
 			await this.onBlock(event, channelName);
 		} catch (exception) {
-			logger.error(`${channelName}] Unhandled Block Error`, exception);
+			this.logger.error(`${channelName}] Unhandled Block Error`, exception);
 		}
 	}
 
 	private async onBlock(event: any, channelName: string) {
 		const hash = event.header.data_hash;
+		const shortId = hash.substr(0, 16);
 		const height = parseInt(event.header.number, 10);
 		const transactions = _.get(event, 'data.data', []);
 		const timestamp = transactions[0].payload.header.channel_header.timestamp;
 		const previousHash = event.header.previous_hash;
 
-		const channelHeight = await this.getChannelHeight(channelName);
-		if (height > channelHeight) {
-			for (const transactionData of transactions) {
-				await this.onTransaction(transactionData, { hash, height });
-			}
-			await this.database.addBlock({
-				id: hash,
-				height,
-				timestamp: new Date(timestamp),
-				previousHash,
-				transactions: transactions.length,
-				channelName,
-			});
-			this.updateChannel({ name: channelName, height, lastHash: hash });
+		if (height <= await this.getChannelHeight(channelName)) {
+			this.logger.debug(`[${channelName}/${height}] Skipped Block: ${shortId}'...'`);
+			return;
 		}
+
+		this.logger.info(`[${channelName}/${height}] New Block: ${shortId}'...'`);
+
+		for (const transactionData of transactions) {
+			await this.onTransaction(transactionData, { hash, height });
+		}
+
+		await this.database.addBlock({
+			id: hash,
+			height,
+			timestamp: new Date(timestamp),
+			previousHash,
+			transactions: transactions.length,
+			channelName,
+		});
+
+		this.updateChannel({ name: channelName, height, lastHash: hash });
 	}
 
 	private async onTransaction(transactionData: any, block: { hash: string, height: number }) {
@@ -156,7 +178,7 @@ export class ExplorerSync {
 			}
 		}
 
-		await this.database.addTransaction({
+		const transaction = {
 			blockHash: block.hash,
 			blockHeight: block.height,
 			id: channelHeader.tx_id,
@@ -171,7 +193,10 @@ export class ExplorerSync {
 			chaincodeResponse: chaincodeResponse ? this.tryJsonParse(chaincodeResponse.response.payload) : null,
 			chaincodeWrites: chaincodeResponse ? chaincodeWrites : null,
 			chaincodeReads: chaincodeResponse ? chaincodeReads : null,
-		});
+		};
+
+		this.logger.info(`[${transaction.channelName}/${block.height}] New Transaction: ${transaction.id.substr(0, 16)}'...'`);
+		await this.database.addTransaction(transaction);
 	}
 
 	private tryJsonParse(value) {
@@ -186,13 +211,16 @@ export class ExplorerSync {
 		if (!this.writeCache[name]) {
 			const channel = await this.database.getChannel(name);
 			this.writeCache[name] = { channel, writePending: false };
-			logger.info(`Loaded channel height from database: ${channel.height}`);
+			this.logger.info(`[${name}] Loaded height from database: ${channel.height}`);
 		}
 		return this.writeCache[name].channel.height;
 	}
 
 	private updateChannel(channel: Channel): void {
-		this.writeCache[channel.name] = { channel, writePending: true };
+		const previous = this.writeCache[channel.name];
+		if (!previous || previous.channel.height < channel.height) {
+			this.writeCache[channel.name] = { channel, writePending: true };
+		}
 	}
 
 	private async flushPendingWrites() {

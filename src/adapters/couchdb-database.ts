@@ -5,9 +5,9 @@ import { Block, Channel, DatabaseNames, DatabaseTable, State, Transaction } from
 import { getLogger, stripMetadata } from '../utilities';
 import { DatabaseAPIAdapter, DatabaseSyncAdapter } from './interfaces';
 
-const logger = getLogger('CouchAPI');
-
 export class CouchDatabase implements DatabaseSyncAdapter {
+	protected logger = getLogger('CouchDB');
+
 	protected nano: Nano.ServerScope;
 	protected channels: Nano.DocumentScope<Channel>;
 	protected blocks: Nano.DocumentScope<Block>;
@@ -23,6 +23,15 @@ export class CouchDatabase implements DatabaseSyncAdapter {
 		this.state = this.nano.db.use<State>(DatabaseNames.STATE);
 	}
 
+	public async connect(): Promise<void> {
+		const databases = await this.nano.db.list();
+		this.logger.debug(`Found: ${databases.join(',')}`);
+	}
+
+	public async disconnect(): Promise<void> {
+		// noop
+	}
+
 	public async setup(tables: DatabaseTable[], channels: string[]): Promise<void> {
 		const dbs = await this.nano.db.list();
 		for (const { name: dbName, indexes } of tables) {
@@ -30,7 +39,7 @@ export class CouchDatabase implements DatabaseSyncAdapter {
 				continue;
 			}
 
-			logger.info(`Creating table: ${dbName}`);
+			this.logger.info(`Creating table: ${dbName}`);
 			await this.nano.db.create(dbName);
 
 			const db = await this.nano.db.use(dbName);
@@ -50,44 +59,26 @@ export class CouchDatabase implements DatabaseSyncAdapter {
 	}
 
 	public async updateChannel(channel: Channel): Promise<void> {
-		const { _rev, height } = await this.channels.get(channel.name);
-		if (channel.height > height) {
-			logger.info(`Updating channel: ${JSON.stringify(channel)}`);
+		const { _rev, height: previousHeight } = await this.channels.get(channel.name);
+		if (channel.height > previousHeight) {
 			await this.channels.insert({ _id: channel.name, ...channel, _rev });
+			this.logger.info(`[${channel.name}] Saved height to database: ${previousHeight}=>${channel.height}`);
 		}
 	}
 
 	public async addBlock(block: Block): Promise<void> {
-		const success = await this.blocks
-			.insert(block, block.id)
-			.catch(() => null);
-		const shortId = block.id.substr(0, 16) + '...';
-		const prefix = `${block.channelName}/${block.height}`;
-		if (success) {
-			logger.info(`[${prefix}] New Block: ${shortId}`);
-		} else {
-			logger.debug(`[${prefix}] Skipped Block:       ${shortId}`);
-		}
+		await this.blocks.insert(block, block.id).catch(() => null);
 	}
 
 	public async addTransaction(transaction: Transaction) {
-		const success = await this.transactions
-			.insert(transaction, transaction.id)
-			.catch(() => null);
-		const shortId = transaction.id.substr(0, 16) + '...';
-		const prefix = `${transaction.channelName}/${transaction.blockHeight}`;
-		if (success) {
-			logger.info(`[${prefix}] New Transaction: ${shortId}`);
-		} else {
-			logger.debug(`[${prefix}] Skipped Transaction: ${shortId}`);
-		}
+		await this.transactions.insert(transaction, transaction.id).catch(() => null);
 	}
 }
 
 export class CouchAPI extends CouchDatabase implements DatabaseAPIAdapter {
-
 	constructor(dbConfig: string | Nano.Configuration) {
 		super(dbConfig);
+		this.logger = getLogger('CouchDB.API');
 	}
 
 	public getChannels(): Handler {

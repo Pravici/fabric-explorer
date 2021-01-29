@@ -2,17 +2,19 @@ import * as Nano from 'nano';
 import * as winston from 'winston';
 
 const logger = winston.createLogger({
+	level: process.env.EXPLORER_LOG_LEVEL || 'debug',
 	format: winston.format.combine(
 		winston.format.timestamp(),
 		winston.format.simple(),
+		winston.format.align(),
 		winston.format.colorize({ all: true }),
 		winston.format.printf(msg => {
-			let message = `[${msg.level}] ${msg.timestamp} ${msg.prefix.padEnd(16)} ${msg.message}`;
+			let message = `[${msg.level}] ${msg.timestamp} ${msg.prefix} ${msg.message}`;
 			const splat = msg[Symbol.for('splat') as any];
 			if (splat) {
 				message += '\n';
 				try {
-					message += JSON.stringify(splat);
+					message += JSON.stringify(splat, null, 2);
 				} catch {
 					message += splat;
 				}

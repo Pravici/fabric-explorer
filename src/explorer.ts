@@ -2,7 +2,8 @@ import { Express } from 'express';
 import { CouchDBWallet, FileSystemWallet, GatewayOptions, Wallet } from 'fabric-network';
 import * as fs from 'fs';
 import * as _ from 'lodash';
-import { CouchAPI, CouchDatabase, DatabaseSyncAdapter, OracleDatabase } from './adapters';
+import { OracleConnectionOptions } from 'typeorm/driver/oracle/OracleConnectionOptions';
+import { CouchDatabase, DatabaseSyncAdapter, OracleDatabase } from './adapters';
 import { ExplorerAPI } from './explorer-api';
 import { ExplorerSync } from './explorer-sync';
 import { ChannelOption } from './types';
@@ -30,7 +31,13 @@ export class Explorer {
 	constructor(options?: ExplorerOptions) {
 		options = options || {};
 		options.couchdb = options.couchdb || process.env.EXPLORER_COUCHDB_URL;
-		options.oracledb = options.oracledb || process.env.EXPLORER_ORACLEDB_URL;
+		options.oracledb = options.oracledb || {} as OracleConnectionOptions;
+		options.oracledb = {
+			type: 'oracle',
+			connectString: options.oracledb.connectString || process.env.EXPLORER_ORACLEDB_URL,
+			username: options.oracledb.username || process.env.EXPLORER_ORACLEDB_USER,
+			password: options.oracledb.password || process.env.EXPLORER_ORACLEDB_PASSWORD,
+		};
 		options.writeInterval = options.writeInterval || parseInt(process.env.EXPLORER_WRITE_INTERVAL, 10) || 5000;
 		options.channels = options.channels || process.env.EXPLORER_NETWORK_CHANNELS || [];
 		options.networkConfig = options.networkConfig || process.env.EXPLORER_NETWORK_CONFIG;
@@ -55,7 +62,7 @@ export class Explorer {
 			options: { writeInterval },
 		});
 
-		this.api = new ExplorerAPI({ api: new CouchAPI(options.couchdb) });
+		// this.api = new ExplorerAPI({ api: new CouchAPI(options.couchdb) });
 	}
 
 	public async start() {
@@ -69,7 +76,9 @@ export class Explorer {
 	}
 
 	public async applyMiddleware({ app, path }: { app: Express, path: string }) {
-		this.api.applyMiddleware({ app, path });
+		if (this.api) {
+			this.api.applyMiddleware({ app, path });
+		}
 	}
 
 	private getNetworkConfig({ networkConfig, networkConfigPath }: ExplorerOptions): any {
@@ -118,7 +127,7 @@ export class Explorer {
 		if (database) {
 			return database;
 		}
-		if (oracledb) {
+		if (oracledb && oracledb.connectString) {
 			return new OracleDatabase(oracledb);
 		}
 		if (couchdb) {

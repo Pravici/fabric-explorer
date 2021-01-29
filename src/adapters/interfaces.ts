@@ -2,11 +2,13 @@ import { Handler } from 'express';
 import { Block, Channel, DatabaseTable, Transaction } from '../types';
 
 export abstract class DatabaseSyncAdapter {
+	public abstract connect(): Promise<void>;
 	public abstract setup(tables: DatabaseTable[], channels: string[]): Promise<void>;
 	public abstract getChannel(name: string): Promise<Channel>;
 	public abstract updateChannel(channel: Channel): Promise<void>;
 	public abstract addBlock(block: Block): Promise<void>;
 	public abstract addTransaction(transaction: Transaction): Promise<void>;
+	public abstract disconnect(): void;
 }
 
 export abstract class DatabaseAPIAdapter {
