@@ -39,7 +39,7 @@ export function abort(message: string, error?: Error): never {
 	if (error) {
 		console.error(error);
 	}
-	process.exit(-1);
+	return process.exit(-1);
 }
 
 export function stripMetadata(docs: Nano.MaybeDocument | Nano.MaybeDocument[]) {
