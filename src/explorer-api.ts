@@ -1,17 +1,11 @@
 import { Express, NextFunction, Request, Response, Router } from 'express';
-import { DatabaseAPIAdapter } from './adapters';
+import { DatabaseAdapter } from './adapters';
 import { getLogger } from './utilities';
 
 const logger = getLogger('API');
 
-type APIOptions = { api: DatabaseAPIAdapter };
-
 export class ExplorerAPI {
-	private api: DatabaseAPIAdapter;
-
-	constructor({ api }: APIOptions) {
-		this.api = api;
-	}
+	constructor(private api: DatabaseAdapter) { }
 
 	public applyMiddleware({ app, path }: { app: Express, path: string }) {
 		app.use(path, Router()

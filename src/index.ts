@@ -1,18 +1,17 @@
-import * as dotenv from 'dotenv';
 import * as bodyParser from 'body-parser';
+import * as dotenv from 'dotenv';
 import * as express from 'express';
-dotenv.config();
-
-// Import after dotenv.config()
 import { Explorer } from './explorer';
 import { getLogger } from './utilities';
+
+dotenv.config();
 
 const logger = getLogger();
 const port = process.env.PORT || 4201;
 
 (async () => {
 	try {
-		const explorer = new Explorer({ channels: ['demo1general', 'demo1issuer'] });
+		const explorer = new Explorer();
 
 		const app = express();
 		app.use(express.static('static'));

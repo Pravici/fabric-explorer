@@ -1,5 +1,8 @@
+import * as dotenv from 'dotenv';
 import * as Nano from 'nano';
 import * as winston from 'winston';
+
+dotenv.config();
 
 const logger = winston.createLogger({
 	level: process.env.EXPLORER_LOG_LEVEL || 'debug',

@@ -1,68 +1,20 @@
-import { Express } from 'express';
-import { CouchDBWallet, FileSystemWallet, GatewayOptions, Wallet } from 'fabric-network';
-import * as fs from 'fs';
-import * as _ from 'lodash';
-import { OracleConnectionOptions } from 'typeorm/driver/oracle/OracleConnectionOptions';
-import { CouchDatabase, DatabaseSyncAdapter, OracleDatabase } from './adapters';
-import { ExplorerAPI } from './explorer-api';
+import { Express, NextFunction, Request, Response, Router } from 'express';
+import { DatabaseAdapter } from './adapters';
+import { ExplorerOptions } from './explorer-options';
 import { ExplorerSync } from './explorer-sync';
-import { ChannelOption } from './types';
-import { abort, getLogger } from './utilities';
+import { getLogger } from './utilities';
 
 const logger = getLogger();
 
-type ExplorerOptions = Partial<{
-	couchdb: ConstructorParameters<typeof CouchDatabase>[0];
-	oracledb: ConstructorParameters<typeof OracleDatabase>[0];
-	database: DatabaseSyncAdapter;
-	api: boolean | ExplorerAPI;
-	writeInterval: number;
-	channels: string | Array<string | ChannelOption>;
-	walletPath: string;
-	walletUrl: string;
-	networkConfig: string | object;
-	networkConfigPath: string;
-} & GatewayOptions>;
-
 export class Explorer {
 	private sync: ExplorerSync;
-	private api: ExplorerAPI;
+	private database: DatabaseAdapter;
 
-	constructor(options?: ExplorerOptions) {
-		options = options || {};
-		options.couchdb = options.couchdb || process.env.EXPLORER_COUCHDB_URL;
-		options.oracledb = options.oracledb || {} as OracleConnectionOptions;
-		options.oracledb = {
-			type: 'oracle',
-			connectString: options.oracledb.connectString || process.env.EXPLORER_ORACLEDB_URL,
-			username: options.oracledb.username || process.env.EXPLORER_ORACLEDB_USER,
-			password: options.oracledb.password || process.env.EXPLORER_ORACLEDB_PASSWORD,
-		};
-		options.writeInterval = options.writeInterval || parseInt(process.env.EXPLORER_WRITE_INTERVAL, 10) || 5000;
-		options.channels = options.channels || process.env.EXPLORER_NETWORK_CHANNELS || [];
-		options.networkConfig = options.networkConfig || process.env.EXPLORER_NETWORK_CONFIG;
-		options.networkConfigPath = options.networkConfigPath || process.env.EXPLORER_NETWORK_CONFIG_PATH || '/config/network-config.json';
-		options.identity = options.identity || process.env.EXPLORER_WALLET_IDENTITY || 'admin';
-		options.walletUrl = options.walletUrl || process.env.EXPLORER_WALLET_URL;
-		options.walletPath = options.walletPath || process.env.EXPLORER_WALLET_PATH;
+	constructor(options?: ConstructorParameters<typeof ExplorerOptions>[0]) {
+		const _options = new ExplorerOptions(options);
 
-		options.wallet = this.getWallet(options);
-		options.networkConfig = this.getNetworkConfig(options);
-		options.database = this.getDatabase(options);
-
-		const gatewayOptions = this.getGatewayOptions(options);
-		const channels = this.getChannels(options);
-		const { networkConfig, database, writeInterval } = options;
-
-		this.sync = new ExplorerSync({
-			networkConfig,
-			gatewayOptions,
-			channels,
-			database,
-			options: { writeInterval },
-		});
-
-		// this.api = new ExplorerAPI({ api: new CouchAPI(options.couchdb) });
+		this.sync = new ExplorerSync(_options.getSyncOptions());
+		this.database = _options.getDatabase();
 	}
 
 	public async start() {
@@ -76,91 +28,17 @@ export class Explorer {
 	}
 
 	public async applyMiddleware({ app, path }: { app: Express, path: string }) {
-		if (this.api) {
-			this.api.applyMiddleware({ app, path });
-		}
-	}
-
-	private getNetworkConfig({ networkConfig, networkConfigPath }: ExplorerOptions): any {
-		try {
-			networkConfig = networkConfig || fs.readFileSync(networkConfigPath).toString();
-		} catch (error) {
-			abort(`[Explorer] Unable to read network config from "${networkConfigPath}"`, error);
-		}
-
-		try {
-			if (typeof networkConfig === 'string') {
-				networkConfig = JSON.parse(networkConfig);
-			}
-		} catch (error) {
-			abort(`[Explorer] Unable to convert network config to json: config="${networkConfig}"`, error);
-		}
-
-		return networkConfig;
-	}
-
-	private getChannels({ channels, networkConfig }: ExplorerOptions): ChannelOption[] {
-		if (typeof channels === 'string') {
-			channels = channels.split(',');
-		}
-
-		if (channels.length === 0) {
-			channels = Object.keys((networkConfig as any).channels || {}) as string[];
-			logger.info(`[Explorer] Found channels from network config: ${channels.join(',')}`);
-		}
-
-		const channelsOptions: ChannelOption[] = channels.map(channel => {
-			if (typeof channel === 'string') {
-				channel = { name: channel, options: { startBlock: 'auto' } };
-			}
-			return channel;
-		});
-
-		if (channelsOptions.length === 0) {
-			abort('[Explorer] Unable to find any channels');
-		}
-
-		return channelsOptions;
-	}
-
-	private getDatabase({ database, oracledb, couchdb }: ExplorerOptions): DatabaseSyncAdapter {
-		if (database) {
-			return database;
-		}
-		if (oracledb && oracledb.connectString) {
-			return new OracleDatabase(oracledb);
-		}
-		if (couchdb) {
-			return new CouchDatabase(couchdb);
-		}
-
-		logger.info('[Explorer] Using default CouchDatabase');
-		return new CouchDatabase('http://localhost:5984');
-	}
-
-	private getGatewayOptions(options: ExplorerOptions): GatewayOptions {
-		const gatewayOptions = {
-			wallet: options.wallet,
-			identity: options.identity,
-			clientTlsIdentity: options.clientTlsIdentity,
-			discovery: options.discovery,
-			eventHandlerOptions: options.eventHandlerOptions,
-			queryHandlerOptions: options.queryHandlerOptions,
-			checkpointer: options.checkpointer,
-		};
-		return _.omitBy(gatewayOptions, _.isNil) as GatewayOptions;
-	}
-
-	private getWallet({ wallet, walletUrl, walletPath }: ExplorerOptions): Wallet {
-		if (wallet) {
-			return wallet;
-		}
-		if (walletUrl) {
-			return new CouchDBWallet({ url: walletUrl });
-		}
-		if (walletPath) {
-			return new FileSystemWallet(walletPath);
-		}
-		return new FileSystemWallet('wallet');
+		app.use(path, Router()
+			.get('/channels', this.database.getChannels())
+			.get(['/blocks', '/blocks/recent'], this.database.getBlocks())
+			.get('/blocks/:id', this.database.getBlockById())
+			.get('/blocks/:id/transactions', this.database.getBlockTransactions())
+			.get(['/transactions', 'transactions/recent'], this.database.getTransactions())
+			.get('/transactions/:id', this.database.getTransactionById())
+			.use((error: any, req: Request, res: Response, next: NextFunction) => {
+				logger.info(error);
+				res.status(error.statusCode || 500).send({ error: true, message: error.message || error });
+			}),
+		);
 	}
 }

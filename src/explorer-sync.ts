@@ -1,6 +1,6 @@
 import { Gateway, GatewayOptions } from 'fabric-network';
 import * as _ from 'lodash';
-import { DatabaseSyncAdapter } from './adapters';
+import { DatabaseAdapter } from './adapters';
 import { SCHEMA } from './constants';
 import { Channel, ChannelOption } from './types';
 import { abort, getLogger } from './utilities';
@@ -15,7 +15,7 @@ type ChannelCache = {
 type SyncOptions = {
 	gatewayOptions: GatewayOptions;
 	networkConfig: string | object;
-	database: DatabaseSyncAdapter;
+	database: DatabaseAdapter;
 	channels: ChannelOption[];
 	options: {
 		writeInterval: number;
@@ -31,7 +31,7 @@ export class ExplorerSync {
 	private channels: ChannelOption[];
 	private listeners = [];
 
-	private database: DatabaseSyncAdapter;
+	private database: DatabaseAdapter;
 	private writing = false;
 	private writeCache: ChannelCache = {};
 	private writeInterval: number;

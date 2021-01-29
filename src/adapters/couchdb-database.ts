@@ -3,11 +3,10 @@ import * as _ from 'lodash';
 import * as Nano from 'nano';
 import { Block, Channel, DatabaseNames, DatabaseTable, State, Transaction } from '../types';
 import { getLogger, stripMetadata } from '../utilities';
-import { DatabaseAPIAdapter, DatabaseSyncAdapter } from './interfaces';
+import { DatabaseAdapter } from './interfaces';
 
-export class CouchDatabase implements DatabaseSyncAdapter {
+export class CouchDatabase implements DatabaseAdapter {
 	protected logger = getLogger('CouchDB');
-
 	protected nano: Nano.ServerScope;
 	protected channels: Nano.DocumentScope<Channel>;
 	protected blocks: Nano.DocumentScope<Block>;
@@ -72,13 +71,6 @@ export class CouchDatabase implements DatabaseSyncAdapter {
 
 	public async addTransaction(transaction: Transaction) {
 		await this.transactions.insert(transaction, transaction.id).catch(() => null);
-	}
-}
-
-export class CouchAPI extends CouchDatabase implements DatabaseAPIAdapter {
-	constructor(dbConfig: string | Nano.Configuration) {
-		super(dbConfig);
-		this.logger = getLogger('CouchDB.API');
 	}
 
 	public getChannels(): Handler {
