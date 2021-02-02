@@ -1,9 +1,34 @@
 import { Handler, NextFunction, Request, Response } from 'express';
 import * as _ from 'lodash';
 import * as Nano from 'nano';
-import { Block, Channel, DatabaseNames, DatabaseTable, State, Transaction } from '../types';
+import { Block, Channel, DatabaseNames, State, Transaction } from '../types';
 import { getLogger, stripMetadata } from '../utilities';
 import { DatabaseAdapter } from './interfaces';
+
+const TABLES = [
+	{
+		name: DatabaseNames.CHANNELS,
+		indexes: [],
+	},
+	{
+		name: DatabaseNames.BLOCKS,
+		indexes: [
+			{ name: 'block_timestamp', fields: ['timestamp'] },
+			{ name: 'block_height', fields: ['height'] },
+			{ name: 'block_channel_name', fields: ['channelName'] },
+		],
+	},
+	{
+		name: DatabaseNames.TRANSACTIONS,
+		indexes: [
+			{ name: 'tx_timestamp', fields: ['timestamp'] },
+			{ name: 'tx_block_height', fields: ['blockHeight'] },
+			{ name: 'tx_block_hash', fields: ['blockHash'] },
+			{ name: 'tx_channel_name', fields: ['channelName'] },
+			{ name: 'tx_chaincode_name', fields: ['channelName', 'chaincodeName'] },
+		],
+	},
+];
 
 export class CouchDatabase implements DatabaseAdapter {
 	protected logger = getLogger('CouchDB');
@@ -31,9 +56,10 @@ export class CouchDatabase implements DatabaseAdapter {
 		// noop
 	}
 
-	public async setup(tables: DatabaseTable[], channels: string[]): Promise<void> {
+	public async setup(channels: string[]): Promise<void> {
 		const dbs = await this.nano.db.list();
-		for (const { name: dbName, indexes } of tables) {
+
+		for (const { name: dbName, indexes } of TABLES) {
 			if (dbs.find(name => name === dbName)) {
 				continue;
 			}

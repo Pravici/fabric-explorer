@@ -1,7 +1,6 @@
 import { Gateway, GatewayOptions } from 'fabric-network';
 import * as _ from 'lodash';
 import { DatabaseAdapter } from './adapters';
-import { SCHEMA } from './constants';
 import { Channel, ChannelOption } from './types';
 import { abort, getLogger } from './utilities';
 
@@ -62,7 +61,7 @@ export class ExplorerSync {
 			.catch(error => abort(`[Explorer.Sync] Database connection problem`, error));
 
 		await this.database
-			.setup(SCHEMA, this.channels.map(c => c.name))
+			.setup(this.channels.map(c => c.name))
 			.catch(error => abort(`[Explorer.Sync] Unable to run setup on database`, error));
 
 		this.logger.debug(`Write interval set to ${this.writeInterval}`);

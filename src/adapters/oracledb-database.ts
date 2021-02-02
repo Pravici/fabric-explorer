@@ -4,7 +4,7 @@ import 'reflect-metadata';
 import { Connection, createConnection, EntityManager } from 'typeorm';
 import { OracleConnectionOptions } from 'typeorm/driver/oracle/OracleConnectionOptions';
 import * as entity from '../entity';
-import { Block, Channel, DatabaseTable, Transaction } from '../types';
+import { Block, Channel, Transaction } from '../types';
 import { getLogger } from '../utilities';
 import { DatabaseAdapter } from './interfaces';
 
@@ -38,7 +38,7 @@ export class OracleDatabase implements DatabaseAdapter {
 		this.connection.close().catch(() => { });
 	}
 
-	public async setup(tables: DatabaseTable[], channels: string[]): Promise<void> {
+	public async setup(channels: string[]): Promise<void> {
 		for (const name of channels) {
 			const found = await this.em.findOne(entity.Channel, name);
 			if (!found) {

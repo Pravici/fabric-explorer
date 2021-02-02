@@ -53,26 +53,6 @@ export enum DatabaseNames {
 	STATE = 'state',
 }
 
-export interface DatabaseTable {
-	name: string;
-	columns: DatabaseColumn[];
-	indexes: DatabaseIndex[];
-}
-
-export interface DatabaseColumn {
-	name: string;
-	primaryKey?: boolean;
-	type: ColumnType;
-	length?: number;
-}
-
-export enum ColumnType {
-	NUMBER = 'number',
-	JSON = 'jsonb',
-	VARCHAR2 = 'varchar2',
-	TIMESTAMP = 'timestamp',
-}
-
 export interface DatabaseIndex {
 	name: string;
 	fields: string[];
