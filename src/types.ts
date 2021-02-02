@@ -1,23 +1,16 @@
-export enum DatabaseNames {
-	METADATA = 'metadata',
-	BLOCKS = 'blocks',
-	TRANSACTIONS = 'transactions',
-	STATE = 'state',
+export interface Channel {
+	name: string;
+	height: number;
+	lastHash: string;
 }
-
-export interface Metadata {
-	channels: {
-		[channelName: string]: {
-			lastBlock: number;
-		};
-	};
-}
-
-export const METADATA_DOC = 'status';
 
 export interface State {
-	key: string;
-	value: any;
+	channelName: string;
+	chaincodeName: string;
+	blockHash: string;
+	blockHeight: string;
+	stateKey: string;
+	stateValue: any;
 }
 
 export interface Block {
@@ -30,17 +23,17 @@ export interface Block {
 }
 
 export interface Transaction {
-	blockHash: string;
-	blockHeight: number;
 	id: string;
-	type: string;
+	type: number;
 	typeString: string;
 	timestamp: Date;
+	blockHash: string;
+	blockHeight: number;
 	channelName: string;
 	channelVersion: string;
 	chaincodeName: string;
 	chaincodeVersion: string;
-	chaincodeResponseStatus: string;
+	chaincodeResponseStatus: number;
 	chaincodeResponse: string;
 	chaincodeWrites: {
 		[key: string]: string | object;
@@ -50,5 +43,24 @@ export interface Transaction {
 			block: number;
 			transaction: number;
 		};
+	};
+}
+
+export enum DatabaseNames {
+	CHANNELS = 'channels',
+	BLOCKS = 'blocks',
+	TRANSACTIONS = 'transactions',
+	STATE = 'state',
+}
+
+export interface DatabaseIndex {
+	name: string;
+	fields: string[];
+}
+
+export interface ChannelOption {
+	name: string;
+	options: {
+		startBlock: 'auto' | number;
 	};
 }

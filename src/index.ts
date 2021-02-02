@@ -1,63 +1,33 @@
-import { CouchDBWallet, FileSystemWallet } from 'fabric-network';
-import * as fs from 'fs';
-import { config } from './config';
-import { SyncManager } from './sync-manager';
-import * as api from './api';
+import * as bodyParser from 'body-parser';
+import * as dotenv from 'dotenv';
+import * as express from 'express';
+import { Explorer } from './explorer';
+import { getLogger } from './utilities';
 
-console.log(`Reading network config: ${config.network.path}`);
-const networkConfig = JSON.parse(fs.readFileSync(config.network.path).toString());
+dotenv.config();
 
-let channels = [];
-if (config.network.channels) {
-	console.log(`Reading network channels: ${config.network.channels}`);
-	channels = config.network.channels.split(',');
-} else {
-	console.log('Reading network channels from network config');
-	channels = Object.keys(networkConfig.channels);
-}
-console.log(`Found channels: ${channels}`);
-
-let wallet;
-if (config.wallet.url) {
-	wallet = new CouchDBWallet({ url: config.wallet.url });
-} else if (config.wallet.path) {
-	wallet = new FileSystemWallet(config.wallet.path);
-}
-
-const gatewayOptions = {
-	identity: config.wallet.identity,
-	wallet,
-	discovery: { enabled: false, asLocalhost: true },
-};
-
-const manager: SyncManager = new SyncManager(config.db.url);
-const server = api.create(manager.nano);
+const logger = getLogger();
+const port = process.env.PORT || 4201;
 
 (async () => {
 	try {
-		// Start API Server
-		server.listen(config.api.port, () => console.log(`API listening on ${config.api.port}`));
+		const explorer = new Explorer();
 
-		// Connect to Blockchain
-		await manager.connect(networkConfig, gatewayOptions);
+		const app = express();
+		app.use(express.static('static'));
+		app.use(bodyParser.json());
+		explorer.applyMiddleware({ app, path: '/api' });
+		app.listen(port, () => logger.info(`API Listening on ${port}`));
 
-		// Start Sync
-		await manager.start(channels);
+		await explorer.start();
+
+		process.on('SIGINT', () => {
+			logger.warn('SIGINT');
+			explorer.stop();
+			process.exit(0);
+		});
 	} catch (error) {
-		console.error(error);
-		console.error((error as Error).stack);
+		logger.error(`Unable to start:`, error);
 		process.exit(-1);
 	}
 })();
-
-process.on('SIGINT', () => {
-	console.log('Exiting');
-	if (manager) {
-		manager.teardown();
-	}
-	process.exit(0);
-});
-
-// process.stdin.resume();
-
-
