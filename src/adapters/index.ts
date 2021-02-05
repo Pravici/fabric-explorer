@@ -1,3 +1,3 @@
-export * from './couchdb-database';
+export * from './couchdb';
+export * from './oracle';
 export * from './interfaces';
-export * from './oracledb-database';

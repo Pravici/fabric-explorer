@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { Params } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { Transaction } from '../../common';
+import { Transaction, TransactionQuery } from '../../common';
 import { SearchOption } from '../../components/search-bar/search-bar.component';
 import { APIService } from '../../services/api.service';
 
@@ -10,9 +9,14 @@ import { APIService } from '../../services/api.service';
 	templateUrl: './transactions.component.html',
 })
 export class TransactionsComponent {
+	private query: TransactionQuery['query'] = {};
+
 	loading = false;
-	bookmark = '';
+	page = 1;
+	lastPage = false;
+	pageSize = 25;
 	transactions: Transaction[] = [];
+
 	searchOptions: SearchOption[] = [
 		{ type: 'id', translateKey: 'HASH', queryParam: 'id' },
 		{ type: 'channelName', translateKey: 'CHANNEL', queryParam: 'channelName' },
@@ -21,21 +25,27 @@ export class TransactionsComponent {
 
 	constructor(private api: APIService) { }
 
-	public search(params: Params) {
-		this.bookmark = '';
-		this.loadTransactions(params);
+	public search(query: TransactionQuery['query']) {
+		this.query = query || {};
+		this.page = 1;
+		this.transactions = [];
+		this.lastPage = false;
+		this._search();
 	}
 
-	loadTransactions(params: Params = {}) {
+	public nextPage() {
+		this.page += 1;
+
+		this._search();
+	}
+
+	private _search() {
 		this.loading = true;
-		if (!this.bookmark) {
-			this.transactions = [];
-		}
-		this.api.getTransactions(this.bookmark, params)
+		this.api.getTransactions({ ...this.query, page: this.page, size: this.pageSize })
 			.pipe(finalize(() => this.loading = false))
-			.subscribe(({ bookmark, transactions }) => {
+			.subscribe(transactions => {
+				this.lastPage = transactions.length < this.pageSize;
 				this.transactions.push(...transactions);
-				this.bookmark = bookmark;
 			});
 	}
 }

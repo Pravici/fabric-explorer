@@ -1,14 +1,15 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { Transaction, DatabaseNames } from '../../../types';
 
 const json = {
 	to: value => JSON.stringify(value),
 	from: value => JSON.parse(value),
 };
 
-@Entity({ name: 'EXPLORER_TRANSACTIONS' })
-export class Transaction extends BaseEntity {
+@Entity({ name: DatabaseNames.TRANSACTIONS })
+export class OracleTransaction extends BaseEntity implements Transaction {
 
-	constructor(options: Partial<Transaction> = {}) {
+	constructor(options: Partial<OracleTransaction> = {}) {
 		super();
 		Object.assign(this, options);
 	}

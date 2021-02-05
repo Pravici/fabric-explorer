@@ -198,11 +198,11 @@ export class ExplorerSync {
 		await this.database.addTransaction(transaction);
 	}
 
-	private tryJsonParse(value) {
+	private tryJsonParse(value: Buffer) {
 		try {
-			return JSON.parse(value);
+			return JSON.parse(value.toString());
 		} catch (error) {
-			return value;
+			return value.toString('hex');
 		}
 	}
 

@@ -3,15 +3,16 @@
 		<table class="table m-0">
 			<thead>
 				<tr>
+					<th scope="col">{{ 'CHANNEL' | translate }}</th>
 					<th scope="col">{{ 'HEIGHT' | translate }}</th>
 					<th scope="col">{{ 'HASH' | translate }}</th>
 					<th scope="col" *ngIf="!simple">{{ 'TIMESTAMP' | translate }}</th>
 					<th scope="col" *ngIf="!simple">{{ 'TRANSACTIONS' | translate }}</th>
-					<th scope="col">{{ 'CHANNEL' | translate }}</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr *ngFor="let block of blocks">
+					<td>{{ block.channelName }}</td>
 					<td>{{ block.height }}</td>
 					<td class="text-monospace">
 						<a routerLink="/blocks/{{ block.id }}/details">
@@ -21,7 +22,6 @@
 					</td>
 					<td *ngIf="!simple">{{ block.timestamp | date:'short' }}</td>
 					<td *ngIf="!simple">{{ block.transactions }}</td>
-					<td>{{ block.channelName }}</td>
 				</tr>
 			</tbody>
 		</table>

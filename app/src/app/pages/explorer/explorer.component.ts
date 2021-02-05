@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Block, Metadata, Transaction } from '../../common';
+import { Params } from '@angular/router';
+import { Block, Channel, Transaction } from '../../common';
 import { APIService } from '../../services/api.service';
 
 @Component({
@@ -8,7 +9,7 @@ import { APIService } from '../../services/api.service';
 })
 export class ExplorerComponent implements OnInit {
 
-	channels: Metadata['channels'] = {};
+	channels: Channel[] = [];
 
 	currentChannel: string = null;
 	blocks: Block[] = [];
@@ -21,9 +22,9 @@ export class ExplorerComponent implements OnInit {
 	public ngOnInit() {
 		this.api.getChannels().subscribe(channels => {
 			this.channels = channels;
-			this.selectChannel(Object.keys(this.channels)[0]);
+			if (this.channels && this.channels.length > 0)
+				this.selectChannel(this.channels[0].name);
 		});
-
 	}
 
 	public selectChannel(channelName: string) {
@@ -41,12 +42,14 @@ export class ExplorerComponent implements OnInit {
 			return;
 		}
 
-		const search = {
-			channelName: this.currentChannel,
+		const query: Params = {
+			channelName,
+			sort: 'height',
+			direction: 'desc',
 			limit: 10,
 		};
 
-		this.api.getBlocks('', search).subscribe(({ blocks, bookmark }) => {
+		this.api.getBlocks({ query }).subscribe(blocks => {
 			this.blocks = blocks;
 			if (blocks.length > 0) {
 				this.selectBlock(blocks[0]);
@@ -68,13 +71,13 @@ export class ExplorerComponent implements OnInit {
 			return;
 		}
 
-		const search = {
+		const query = {
 			channelName: this.currentChannel,
 			blockHash: this.currentBlock.id,
 			limit: 10,
 		};
 
-		this.api.getTransactions('', search).subscribe(({ transactions, bookmark }) => {
+		this.api.getTransactions({ query }).subscribe(transactions => {
 			this.transactions = transactions;
 		});
 	}

@@ -11,7 +11,6 @@ import { APIService } from '../../services/api.service';
 export class BlockDetailComponent implements OnInit {
 	block: Block;
 	transactions: Transaction[] = [];
-	bookmark = '';
 
 	constructor(
 		private router: Router,
@@ -27,9 +26,8 @@ export class BlockDetailComponent implements OnInit {
 			this.router.navigate(['blocks']);
 		}
 
-		this.api.getBlockTransactions(this.block.id).subscribe(({ transactions, bookmark }) => {
+		this.api.getBlockTransactions(this.block.id).subscribe(transactions => {
 			this.transactions = transactions;
-			this.bookmark = bookmark;
 		});
 	}
 }

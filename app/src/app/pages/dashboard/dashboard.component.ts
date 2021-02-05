@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Block, Metadata, Transaction } from '../../common';
+import { Block, Channel, Transaction } from '../../common';
 import { APIService } from '../../services/api.service';
 
 @Component({
@@ -7,7 +7,7 @@ import { APIService } from '../../services/api.service';
 	templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-	channels: Metadata['channels'] = {};
+	channels: Channel[] = [];
 	transactions: Transaction[] = [];
 	blocks: Block[] = [];
 
@@ -18,11 +18,11 @@ export class DashboardComponent implements OnInit {
 			this.channels = channels;
 		});
 
-		this.api.getBlocks('', { limit: 10 }).subscribe(({ blocks, bookmark }) => {
+		this.api.getBlocks({ size: 10 }).subscribe(blocks => {
 			this.blocks = blocks;
 		});
 
-		this.api.getTransactions('', { limit: 10 }).subscribe(({ transactions }) => {
+		this.api.getTransactions({ size: 10 }).subscribe(transactions => {
 			this.transactions = transactions;
 		});
 	}

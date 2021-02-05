@@ -1,7 +1,8 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { Channel, DatabaseNames } from '../../../types';
 
-@Entity({ name: 'EXPLORER_CHANNELS' })
-export class Channel extends BaseEntity {
+@Entity({ name: DatabaseNames.CHANNELS })
+export class OracleChannel extends BaseEntity implements Channel {
 
 	constructor(options: Partial<Channel> = {}) {
 		super();

@@ -41,11 +41,3 @@ export function abort(message: string, error?: Error): never {
 	}
 	return process.exit(-1);
 }
-
-export function stripMetadata(docs: Nano.MaybeDocument | Nano.MaybeDocument[]) {
-	(Array.isArray(docs) ? docs : [docs]).map(doc => {
-		delete doc._id;
-		delete doc._rev;
-	});
-	return docs;
-}

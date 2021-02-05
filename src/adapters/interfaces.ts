@@ -1,5 +1,4 @@
-import { Handler } from 'express';
-import { Block, Channel, Transaction } from '../types';
+import { Block, BlockQuery, BlockTransactionQuery, Channel, Transaction, TransactionQuery } from '../types';
 
 export type DatabaseAdapter = DatabaseSyncAdapter & DatabaseAPIAdapter;
 
@@ -14,11 +13,11 @@ abstract class DatabaseSyncAdapter {
 }
 
 abstract class DatabaseAPIAdapter {
-	public abstract getBlocks(): Handler;
-	public abstract getBlockById(): Handler;
-	public abstract getTransactions(): Handler;
-	public abstract getTransactionById(): Handler;
-	public abstract getBlockTransactions(): Handler;
-	public abstract getChannels(): Handler;
+	public abstract getBlocks(options: BlockQuery): Promise<Block[]>;
+	public abstract getBlockById(id: string): Promise<Block>;
+	public abstract getTransactions(options: TransactionQuery): Promise<Transaction[]>;
+	public abstract getTransactionById(id: string): Promise<Transaction>;
+	public abstract getBlockTransactions(options: BlockTransactionQuery): Promise<Transaction[]>;
+	public abstract getChannels(): Promise<Channel[]>;
 }
 
