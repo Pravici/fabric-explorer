@@ -39,10 +39,7 @@ export class ExplorerAPI {
 		return async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const options: BlockQuery = {
-					page: parseInt(req.query.page as string, 10) || 1,
-					size: parseInt(req.query.size as string, 10) || 25,
-					sort: req.query.sort as string || 'timestamp',
-					direction: req.query.direction === 'asc' ? 'asc' : 'desc',
+					...this.getCommonOptions(req.query),
 					query: _.omitBy({
 						id: req.query.id as string,
 						height: parseInt(req.query.height as string, 10) || null,
@@ -62,10 +59,7 @@ export class ExplorerAPI {
 		return async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const options: BlockTransactionQuery = {
-					page: parseInt(req.query.page as string, 10) || 1,
-					size: parseInt(req.query.size as string, 10) || 25,
-					sort: req.query.sort as string || 'timestamp',
-					direction: req.query.direction === 'desc' ? 'desc' : 'asc',
+					...this.getCommonOptions(req.query),
 					id: req.params.id,
 				};
 				const blocks = await this.api.getBlockTransactions(options);
@@ -92,10 +86,7 @@ export class ExplorerAPI {
 		return async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const options: TransactionQuery = {
-					page: parseInt(req.query.page as string, 10) || 1,
-					size: parseInt(req.query.size as string, 10) || 25,
-					sort: req.query.sort as string || 'timestamp',
-					direction: req.query.direction === 'desc' ? 'desc' : 'asc',
+					...this.getCommonOptions(req.query),
 					query: _.omitBy({
 						id: req.query.id as string,
 						blockHash: req.query.blockHash as string || null,
@@ -121,6 +112,15 @@ export class ExplorerAPI {
 			} catch (error) {
 				return next(error);
 			}
+		};
+	}
+
+	private getCommonOptions(query: any) {
+		return {
+			page: parseInt(query.page as string, 10) || 1,
+			size: parseInt(query.size as string, 10) || 25,
+			sort: query.sort as string || 'timestamp',
+			direction: query.direction === 'asc' ? 'asc' : 'desc' as 'asc' | 'desc',
 		};
 	}
 }

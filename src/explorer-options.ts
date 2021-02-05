@@ -120,6 +120,7 @@ export class ExplorerOptions {
 			}
 
 			try {
+				this.logger.debug(`Reading network config from path=${networkConfigPath}`);
 				networkConfig = fs.readFileSync(networkConfigPath).toString();
 			} catch (error) {
 				this.logger.error(`Unable to read network config from path: "${networkConfigPath}"`);

@@ -5,12 +5,12 @@
 	<div class="row">
 		<div class="col overflow-auto">
 			<div class="d-flex flex-row">
-				<div *ngFor="let item of channels | keyvalue">
+				<div *ngFor="let channel of channels">
 					<nb-card class="mr-2 rounded">
 						<nb-card-body>
-							<h6>{{ item.key }}</h6>
+							<h6>{{ channel.name }}</h6>
 							<div class="d-flex align-items-end">
-								<h1 class="m-0">{{ item.value.lastBlock }}</h1>
+								<h1 class="m-0">{{ channel.height }}</h1>
 								<div class="text-muted mb-2 ml-1">blocks</div>
 							</div>
 						</nb-card-body>

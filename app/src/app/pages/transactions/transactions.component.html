@@ -8,8 +8,8 @@
 <div class="row">
 	<div class="col-12">
 		<fabric-explorer-transaction-list [transactions]="transactions">
-			<button nbButton (click)="loadTransactions()" [nbSpinner]="loading" [disabled]="loading">
-				<span>{{ 'LOAD' | translate }}</span>
+			<button nbButton (click)="nextPage()" [nbSpinner]="loading" [disabled]="loading">
+				<span>{{ 'NEXT' | translate }}</span>
 			</button>
 		</fabric-explorer-transaction-list>
 	</div>

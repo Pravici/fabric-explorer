@@ -9,11 +9,11 @@
 			<li class="breadcrumb-item" *ngIf="currentChannel">
 				<span>{{ currentChannel }}</span>
 			</li>
-			<li class="breadcrumb-item" *ngIf="currentChannel">
+			<!-- <li class="breadcrumb-item" *ngIf="currentChannel">
 				<span>Blocks</span>
-			</li>
+			</li> -->
 			<li class="breadcrumb-item" *ngIf="currentBlock">
-				<span>{{ currentBlock.height }} ({{ currentBlock.id | truncatePipe:8:8 }})</span>
+				<span>Block {{ currentBlock.height }} ({{ currentBlock.id | truncatePipe:8:8 }})</span>
 			</li>
 			<li class="breadcrumb-item" *ngIf="currentBlock">
 				<span>Transactions</span>
@@ -30,13 +30,13 @@
 			<nb-card>
 				<nb-list>
 					<nb-list-item
-						*ngFor="let item of channels | keyvalue"
-						(click)="selectChannel(item.key)"
+						*ngFor="let channel of channels"
+						(click)="selectChannel(channel.name)"
 						class="cursor-pointer"
-						[class.border-left-info]="item.key === currentChannel">
+						[class.border-left-info]="channel.name === currentChannel">
 						<div class="d-flex justify-content-between align-items-center">
-							<h6 class="m-0">{{ item.key }}</h6>
-							<div class="">{{ item.value.lastBlock }} blocks</div>
+							<h6 class="m-0">{{ channel.name }}</h6>
+							<div class="">{{ channel.height }} blocks</div>
 						</div>
 					</nb-list-item>
 				</nb-list>
@@ -51,7 +51,7 @@
 						class="cursor-pointer"
 						[class.border-left-info]="block.id === currentBlock?.id">
 						<div class="d-flex justify-content-between align-items-center">
-							<h6 class="m-0">{{ block.height }}</h6>
+							<h6 class="m-0">Block {{ block.height }}</h6>
 							<div class="text-monospace text-truncate">
 								<a routerLink="/blocks/{{ block.id }}/details">
 									<span>{{ block.id | truncatePipe:8:8 }}</span>
