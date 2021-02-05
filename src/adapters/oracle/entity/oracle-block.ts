@@ -1,9 +1,10 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { Block, DatabaseNames } from '../../../types';
 
-@Entity({ name: 'EXPLORER_BLOCKS' })
-export class Block extends BaseEntity {
+@Entity({ name: DatabaseNames.BLOCKS })
+export class OracleBlock extends BaseEntity implements Block {
 
-	constructor(options: Partial<Block> = {}) {
+	constructor(options: Partial<OracleBlock> = {}) {
 		super();
 		Object.assign(this, options);
 	}

@@ -22,6 +22,27 @@ export interface Block {
 	channelName: string;
 }
 
+export interface BlockQuery {
+	page: number;
+	size: number;
+	sort: string;
+	direction: 'asc' | 'desc';
+	query: {
+		id?: string,
+		height?: number,
+		channelName?: string,
+		chaincodeName?: string,
+	};
+}
+
+export interface BlockTransactionQuery {
+	id: string;
+	page?: number;
+	size?: number;
+	sort?: string;
+	direction?: 'asc' | 'desc';
+}
+
 export interface Transaction {
 	id: string;
 	type: number;
@@ -46,16 +67,25 @@ export interface Transaction {
 	};
 }
 
-export enum DatabaseNames {
-	CHANNELS = 'channels',
-	BLOCKS = 'blocks',
-	TRANSACTIONS = 'transactions',
-	STATE = 'state',
+export interface TransactionQuery {
+	page: number;
+	size: number;
+	sort: string;
+	direction: 'asc' | 'desc';
+	query: {
+		id?: string,
+		blockHeight?: number,
+		blockHash?: string;
+		channelName?: string,
+		chaincodeName?: string,
+	};
 }
 
-export interface DatabaseIndex {
-	name: string;
-	fields: string[];
+export enum DatabaseNames {
+	CHANNELS = 'FABRIC_EXPLORER_CHANNELS',
+	BLOCKS = 'FABRIC_EXPLORER_BLOCKS',
+	TRANSACTIONS = 'FABRIC_EXPLORER_TRANSACTIONS',
+	STATE = 'FABRIC_EXPLORER_STATE',
 }
 
 export interface ChannelOption {
