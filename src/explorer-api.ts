@@ -11,6 +11,7 @@ export class ExplorerAPI {
 
 	public applyMiddleware({ app, path }: { app: Express, path: string }) {
 		app.use(path, Router()
+			.get('/search', this.search())
 			.get('/channels', this.getChannels())
 			.get(['/blocks', '/blocks/recent'], this.getBlocks())
 			.get('/blocks/:id', this.getBlockById())
@@ -22,6 +23,37 @@ export class ExplorerAPI {
 				res.status(error.statusCode || 500).send({ error: true, message: error.message || error });
 			}),
 		);
+	}
+
+	private search(): Handler {
+		return async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const term = ((req.query.q as string) || '').trim();
+				if (!term) {
+					return res.status(400).send({ error: true, message: 'Bad Request: search term (?q=) is required' });
+				}
+
+				if (term.length === 64) {
+					const block = await this.api.getBlockById(term).catch(() => null);
+					if (block) {
+						return res.send({ block });
+					}
+					const transaction = await this.api.getTransactionById(term).catch(() => null);
+					if (transaction) {
+						return res.send({ transaction });
+					}
+				}
+
+				const channel = await this.api.getChannel(term).catch(() => null);
+				if (channel) {
+					return res.send({ channel });
+				}
+
+				return res.status(404).send({ error: true, message: `Hash not found: ${term}` });
+			} catch (error) {
+				return next(error);
+			}
+		};
 	}
 
 	private getChannels(): Handler {

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Params } from '@angular/router';
+import { NbToastrService } from '@nebular/theme';
 import { Block, Channel, Transaction } from '../../common';
+import { SearchOption } from '../../components/search-bar/search-bar.component';
 import { APIService } from '../../services/api.service';
 
 @Component({
@@ -8,16 +10,70 @@ import { APIService } from '../../services/api.service';
 	templateUrl: './explorer.component.html',
 })
 export class ExplorerComponent implements OnInit {
-
 	channels: Channel[] = [];
-
 	currentChannel: string = null;
 	blocks: Block[] = [];
 	currentBlock: Block = null;
 	transactions: Transaction[] = [];
 	currentTransaction: Transaction = null;
+	hash = '';
+	searchOptions: SearchOption[] = [
+		{ type: 'hash', translateKey: 'HASH', queryParam: 'q' },
+	];
 
-	constructor(private api: APIService) { }
+	constructor(
+		private notificationService: NbToastrService,
+		private api: APIService,
+	) { }
+
+	public search(options: Params) {
+		const { hash } = options || {} as Params;
+		this.hash = hash || null;
+		if (!hash) {
+			if (this.channels.length > 0) {
+				this.selectChannel(this.channels[0].name);
+			}
+			return;
+		}
+
+		this.api.search(hash)
+			.subscribe({
+				next: ({ block, transaction, channel }) => {
+					if (channel) {
+						this.currentChannel = channel.name;
+						this.blocks = [];
+						this.currentBlock = null;
+						this.transactions = [];
+						this.currentTransaction = null;
+					}
+
+					if (block) {
+						this.currentChannel = block.channelName;
+						this.blocks = [block];
+						this.currentBlock = block;
+						this.transactions = [];
+						this.currentTransaction = null;
+					}
+
+					if (transaction) {
+						this.currentChannel = transaction.channelName;
+						this.blocks = [];
+						this.api.getBlockById(transaction.blockHash).subscribe({
+							next: _block => {
+								this.blocks = [_block];
+								this.currentBlock = _block;
+							},
+							error: () => { },
+						});
+						this.transactions = [transaction];
+						this.currentTransaction = null;
+					}
+				},
+				error: response => {
+					this.notificationService.danger('', response.error.message || response.message, { hasIcon: false });
+				},
+			});
+	}
 
 	public ngOnInit() {
 		this.api.getChannels().subscribe(channels => {
@@ -28,7 +84,7 @@ export class ExplorerComponent implements OnInit {
 	}
 
 	public selectChannel(channelName: string) {
-		if (!channelName) {
+		if (!channelName || this.channels.length === 0) {
 			return;
 		}
 

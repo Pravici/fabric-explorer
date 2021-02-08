@@ -41,6 +41,10 @@
 		.border-left-#{$status} {
 			border-left: 0.35rem solid nb-theme(color-#{$status}-default);
 		}
+
+		.border-bottom-#{$status} {
+			border-bottom: 0.35rem solid nb-theme(color-#{$status}-default);
+		}
 	}
 
 	nb-route-tabset .route-tabset {

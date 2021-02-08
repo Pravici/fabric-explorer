@@ -2,7 +2,7 @@
 	<div class="form-group">
 		<div class="d-flex">
 			<div class="">
-				<nb-select fullWidth formControlName="key" id="inputKey">
+				<nb-select fullWidth formControlName="key" id="inputKey" [hidden]="options.length === 1">
 					<nb-option [value]="item.type" *ngFor="let item of options">
 						<span>{{ item.translateKey | translate }}</span>
 					</nb-option>

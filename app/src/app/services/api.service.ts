@@ -33,6 +33,10 @@ export class APIService {
 		return this.http.get<Transaction>(`/api/transactions/${id}`);
 	}
 
+	public search(term: string) {
+		return this.http.get<{ block?: Block, transaction?: Transaction, channel?: Channel }>(`/api/search`, { params: { q: term } });
+	}
+
 	private flatten(options: Partial<BlockQuery & BlockTransactionQuery & TransactionQuery>): Params {
 		const params = { ...options, ...options.query };
 		delete params.query;

@@ -1,5 +1,10 @@
 <h1>{{ 'EXPLORER' | translate }}</h1>
 <hr>
+<div class="row">
+	<div class="col-12">
+		<fabric-explorer-search-bar [options]="searchOptions" (search)="search($event)"></fabric-explorer-search-bar>
+	</div>
+</div>
 <div>
 	<nav aria-label="breadcrumb">
 		<ol class="breadcrumb">
@@ -49,6 +54,7 @@
 						*ngFor="let block of blocks"
 						(click)="selectBlock(block)"
 						class="cursor-pointer"
+						[class.border-bottom-success]="block.id === hash"
 						[class.border-left-info]="block.id === currentBlock?.id">
 						<div class="d-flex justify-content-between align-items-center">
 							<h6 class="m-0">Block {{ block.height }}</h6>
@@ -73,6 +79,7 @@
 						*ngFor="let transaction of transactions"
 						(click)="selectTransaction(transaction)"
 						class="cursor-pointer"
+						[class.border-bottom-success]="transaction.id === hash"
 						[class.border-left-info]="transaction.id === currentTransaction?.id">
 						<h6 class="m-0 text-truncate">
 							<a routerLink="/transactions/{{ transaction.id }}/details">{{ transaction.id }}</a>
