@@ -94,9 +94,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 			return;
 		}
 
+		const term = this.formGroup.controls.value.value.trim();
+		this.formGroup.controls.value.setValue(term);
 		this.filtered = true;
 		this.sync();
-		this.search.emit({ [this.formGroup.controls.key.value]: this.formGroup.controls.value.value });
+		this.search.emit({ [this.formGroup.controls.key.value]: term });
 	}
 
 	private sync() {
