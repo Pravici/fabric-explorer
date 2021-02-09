@@ -42,6 +42,8 @@ export class ExplorerAPI {
 					if (transaction) {
 						return res.send({ transaction });
 					}
+
+					return res.status(404).send({ error: true, message: `Hash not found: ${term}` });
 				}
 
 				const channel = await this.api.getChannel(term).catch(() => null);
@@ -49,7 +51,7 @@ export class ExplorerAPI {
 					return res.send({ channel });
 				}
 
-				return res.status(404).send({ error: true, message: `Hash not found: ${term}` });
+				return res.status(404).send({ error: true, message: `Not found: ${term}` });
 			} catch (error) {
 				return next(error);
 			}
