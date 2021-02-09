@@ -67,7 +67,7 @@ export class OracleDatabase implements DatabaseAdapter {
 			skip: size * (page - 1),
 			take: size,
 			where: query,
-			order: sort ? { [sort]: direction } : null,
+			order: sort ? { [sort]: direction.toUpperCase() } : null,
 		});
 	}
 
@@ -81,7 +81,7 @@ export class OracleDatabase implements DatabaseAdapter {
 			skip: size * (page - 1),
 			take: size,
 			where: { blockHash: id },
-			order: sort ? { [sort]: direction } : null,
+			order: sort ? { [sort]: direction.toUpperCase() } : null,
 		});
 	}
 
@@ -91,7 +91,7 @@ export class OracleDatabase implements DatabaseAdapter {
 			skip: size * (page - 1),
 			take: size,
 			where: query,
-			order: sort ? { [sort]: direction } : null,
+			order: sort ? { [sort]: direction.toUpperCase() } : null,
 		});
 	}
 
