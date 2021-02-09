@@ -40,7 +40,7 @@ export class ExplorerComponent implements OnInit {
 			.subscribe({
 				next: ({ block, transaction, channel }) => {
 					if (channel) {
-						this.currentChannel = channel.name;
+						this.currentChannel = null;
 						this.blocks = [];
 						this.currentBlock = null;
 						this.transactions = [];
@@ -50,7 +50,7 @@ export class ExplorerComponent implements OnInit {
 					if (block) {
 						this.currentChannel = block.channelName;
 						this.blocks = [block];
-						this.currentBlock = block;
+						this.currentBlock = null;
 						this.transactions = [];
 						this.currentTransaction = null;
 					}

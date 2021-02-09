@@ -38,6 +38,7 @@
 						*ngFor="let channel of channels"
 						(click)="selectChannel(channel.name)"
 						class="cursor-pointer"
+						[class.border-bottom-success]="channel.name === hash"
 						[class.border-left-info]="channel.name === currentChannel">
 						<div class="d-flex justify-content-between align-items-center">
 							<h6 class="m-0">{{ channel.name }}</h6>
