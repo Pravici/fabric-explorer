@@ -1,24 +1,16 @@
 {
-	"compilerOptions": {
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"outDir": "dist",
-		"target": "es5",
-		"moduleResolution": "node",
-		"module": "commonjs",
-		"declaration": true,
-		"sourceMap": true,
-		"lib": [
-			"es5",
-			"es6",
-			"es2017",
-			"es2018"
-		]
-	},
-	"include": [
-		"./src/**/*"
-	],
-	"exclude": [
-		"./src/**/*.spec.ts"
-	]
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "lib",
+    "target": "es5",
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "declaration": true,
+    "sourceMap": true,
+    "lib": ["es5", "es6", "es2017", "es2018"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/node_modules/**", "**/test/**/*.*", "**/lib/**/*.*"]
 }

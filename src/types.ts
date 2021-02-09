@@ -1,96 +1,32 @@
-export interface Channel {
-	name: string;
-	height: number;
-	lastHash: string;
-}
+import { GatewayOptions } from 'fabric-network';
+import { CouchDatabase, DatabaseAdapter, OracleDatabase } from './adapters';
+import { ExplorerAPI } from './explorer-api';
 
-export interface State {
-	channelName: string;
-	chaincodeName: string;
-	blockHash: string;
-	blockHeight: string;
-	stateKey: string;
-	stateValue: any;
-}
+export * from './types-common';
 
-export interface Block {
-	id: string;
-	timestamp: Date;
-	height: number;
-	previousHash: string;
-	transactions: number;
-	channelName: string;
-}
+export type ExplorerOptions = Partial<
+  {
+    couchdb: ConstructorParameters<typeof CouchDatabase>[0];
+    oracledb: ConstructorParameters<typeof OracleDatabase>[0];
+    database: DatabaseAdapter;
+    api: boolean | ExplorerAPI;
+    writeInterval: number;
+    channels: string | Array<string | ChannelOption>;
+    walletPath: string;
+    walletUrl: string;
+    networkConfig: string | NetworkConfig;
+    networkConfigPath: string;
+  } & GatewayOptions
+>;
 
-export interface BlockQuery {
-	page: number;
-	size: number;
-	sort: string;
-	direction: 'asc' | 'desc';
-	query: {
-		id?: string,
-		height?: number,
-		channelName?: string,
-		chaincodeName?: string,
-	};
-}
-
-export interface BlockTransactionQuery {
-	id: string;
-	page?: number;
-	size?: number;
-	sort?: string;
-	direction?: 'asc' | 'desc';
-}
-
-export interface Transaction {
-	id: string;
-	type: number;
-	typeString: string;
-	timestamp: Date;
-	blockHash: string;
-	blockHeight: number;
-	channelName: string;
-	channelVersion: string;
-	chaincodeName: string;
-	chaincodeVersion: string;
-	chaincodeResponseStatus: number;
-	chaincodeResponse: string;
-	chaincodeWrites: {
-		[key: string]: string | object;
-	};
-	chaincodeReads: {
-		[key: string]: {
-			block: number;
-			transaction: number;
-		};
-	};
-}
-
-export interface TransactionQuery {
-	page: number;
-	size: number;
-	sort: string;
-	direction: 'asc' | 'desc';
-	query: {
-		id?: string,
-		blockHeight?: number,
-		blockHash?: string;
-		channelName?: string,
-		chaincodeName?: string,
-	};
-}
-
-export enum DatabaseNames {
-	CHANNELS = 'FABRIC_EXPLORER_CHANNELS',
-	BLOCKS = 'FABRIC_EXPLORER_BLOCKS',
-	TRANSACTIONS = 'FABRIC_EXPLORER_TRANSACTIONS',
-	STATE = 'FABRIC_EXPLORER_STATE',
-}
+export type NetworkConfig = Record<
+  string,
+  { channels: Record<string, unknown> }
+>;
 
 export interface ChannelOption {
-	name: string;
-	options: {
-		startBlock: 'auto' | number;
-	};
+  name: string;
+  options: {
+    startBlock: 'auto' | number;
+  };
 }

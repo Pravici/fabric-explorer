@@ -1,65 +1,62 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
-import { Transaction, DatabaseNames } from '../../../types';
+import { ChaincodeObject, DatabaseNames, Transaction } from '../../../types';
 
 const json = {
-	to: value => JSON.stringify(value),
-	from: value => JSON.parse(value),
+  to: (value) => JSON.stringify(value),
+  from: (value) => JSON.parse(value),
 };
 
 @Entity({ name: DatabaseNames.TRANSACTIONS })
 export class OracleTransaction extends BaseEntity implements Transaction {
+  constructor(options: Partial<OracleTransaction> = {}) {
+    super();
+    Object.assign(this, options);
+  }
 
-	constructor(options: Partial<OracleTransaction> = {}) {
-		super();
-		Object.assign(this, options);
-	}
+  @PrimaryColumn({ length: 64 })
+  id: string;
 
-	@PrimaryColumn({ length: 64 })
-	id: string;
+  @Column()
+  type: number;
 
-	@Column()
-	type: number;
+  @Column()
+  typeString: string;
 
-	@Column()
-	typeString: string;
+  @Column({ type: 'timestamp' })
+  timestamp: Date;
 
-	@Column({ type: 'timestamp' })
-	timestamp: Date;
+  @Column({ length: 64 })
+  blockHash: string;
 
-	@Column({ length: 64 })
-	blockHash: string;
+  @Column()
+  blockHeight: number;
 
-	@Column()
-	blockHeight: number;
+  @Column()
+  channelName: string;
 
-	@Column()
-	channelName: string;
+  @Column()
+  channelVersion: string;
 
-	@Column()
-	channelVersion: string;
+  @Column({ nullable: true })
+  chaincodeName: string;
 
-	@Column({ nullable: true })
-	chaincodeName: string;
+  @Column({ nullable: true })
+  chaincodeVersion: string;
 
-	@Column({ nullable: true })
-	chaincodeVersion: string;
+  @Column({ nullable: true })
+  chaincodeResponseStatus: number;
 
-	@Column({ nullable: true })
-	chaincodeResponseStatus: number;
+  @Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
+  chaincodeResponse: ChaincodeObject;
 
-	@Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
-	chaincodeResponse: any;
+  @Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
+  chaincodeWrites: ChaincodeObject;
 
-	@Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
-	chaincodeWrites: {
-		[key: string]: string | object;
-	};
-
-	@Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
-	chaincodeReads: {
-		[key: string]: {
-			block: number;
-			transaction: number;
-		};
-	};
+  @Column({ type: 'varchar2', length: 2000, transformer: json, nullable: true })
+  chaincodeReads: {
+    [key: string]: {
+      block: number;
+      transaction: number;
+    };
+  };
 }
