@@ -41,7 +41,7 @@ export class OracleDatabase implements DatabaseAdapter {
 	}
 
 	public async getChannel(name: string): Promise<Channel> {
-		return await this.em.findOne(OracleChannel, name) || { height: 0, lastHash: null, name };
+		return await this.em.findOne(OracleChannel, name);
 	}
 
 	public async updateChannel(channel: Channel): Promise<void> {

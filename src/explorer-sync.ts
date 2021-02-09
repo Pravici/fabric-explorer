@@ -208,7 +208,7 @@ export class ExplorerSync {
 
 	private async getChannelHeight(name: string): Promise<number> {
 		if (!this.writeCache[name]) {
-			const channel = await this.database.getChannel(name);
+			const channel = await this.database.getChannel(name) || { name, height: 0, lastHash: '' };
 			this.writeCache[name] = { channel, writePending: false };
 			this.logger.info(`[${name}] Loaded height from database: ${channel.height}`);
 		}
